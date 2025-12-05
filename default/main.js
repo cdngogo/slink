@@ -187,30 +187,24 @@ function addUrlToList(shortUrl, longUrl) {
   keyItem.appendChild(qrcodeBtn)
   child.appendChild(keyItem)
 
-  // 插入一个二维码占位 (外层 wrapper)
-  let qrcodeWrapper = document.createElement('div');
-  qrcodeWrapper.setAttribute('id', 'qrcode-' + shortUrl)
-  qrcodeWrapper.classList.add('qrcode-container-wrapper');
-
-  // 插入内层容器，用于生成二维码内容 (确保结构正确)
+  // 插入一个二维码占位
   let qrcodeContainer = document.createElement('div');
-  qrcodeContainer.classList.add('qrcode-container');
-  qrcodeWrapper.appendChild(qrcodeContainer);
-  child.appendChild(qrcodeWrapper)
+  qrcodeContainer.setAttribute('id', 'qrcode-' + shortUrl);
+  qrcodeContainer.classList.add('qrcode-container'); 
+  child.appendChild(qrcodeContainer);
   child.appendChild(buildValueItemFunc(longUrl)) // 长链接信息
   urlList.append(child)
 }
 
 // 二维码切换逻辑
 function toggleQrcode(shortUrl) {
-  const qrcodeWrapper = document.getElementById('qrcode-' + shortUrl);
-  const qrcodeContainer = qrcodeWrapper.querySelector('.qrcode-container');
-  const qrcodeBtn = document.getElementById('qrcodeBtn-' + shortUrl);
-  const fullUrl = window.location.protocol + "//" + window.location.host + "/" + shortUrl;
-  const isVisible = qrcodeWrapper.classList.toggle('qrcode-visible'); // 使用 classList.toggle 切换 CSS 动画
-
+  const qrcodeContainer = document.getElementById('qrcode-' + shortUrl); 
+  const qrcodeBtn = document.getElementById('qrcodeBtn-' + shortUrl);
+  const fullUrl = window.location.protocol + "//" + window.location.host + "/" + shortUrl;
+  const isVisible = qrcodeContainer.classList.toggle('qrcode-visible');
+  
   if (isVisible) {
-    // 生成 QR code 到内层容器
+    // 生成 QR code
     qrcodeContainer.innerHTML = '';
     $(qrcodeContainer).qrcode({
       render: 'canvas',
@@ -223,15 +217,15 @@ function toggleQrcode(shortUrl) {
 
     // 更新按钮样式
     qrcodeBtn.classList.replace('btn-info', 'btn-warning');
-    qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="隐藏二维码"></i>';
+    qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="隐藏二维码"></i>';
   } else {
-    setTimeout(() => {
-      qrcodeContainer.innerHTML = '';
-    }, 500); // 隐藏: 等待过渡完成后清除内容
+    setTimeout(() => {
+      qrcodeContainer.innerHTML = '';
+    }, 500);
 
-    // 更新按钮样式
-    qrcodeBtn.classList.replace('btn-warning', 'btn-info');
-    qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="显示二维码"></i>';
+    // 更新按钮样式
+    qrcodeBtn.classList.replace('btn-warning', 'btn-info');
+    qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="显示二维码"></i>';
   }
 }
 
