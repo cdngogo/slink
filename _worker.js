@@ -257,12 +257,10 @@ async function handleRequest(request, env) {
                 let jsonObjectRetrun = JSON.parse(`{"status":200, "error":"", "kvlist": []}`);
                 for (let i = 0; i < keyList.keys.length; i++) {
                     let item = keyList.keys[i];
-                    if (protect_keylist.includes(item.name)) {
-                        continue;
-                    }
-                    if (item.name.endsWith("-count")) {
-                        continue;
-                    }
+
+                    if (protect_keylist.includes(item.name)) { continue; } // 过滤保护列表中的键
+                    if (item.name.endsWith("-count")) { continue; } // 过滤访问计数键
+                    if (item.name.length === 128) { continue; } // 过滤哈希值键
 
                     let url = await env.LINKS.get(item.name); 
                     let newElement = { "key": item.name, "value": url };
