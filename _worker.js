@@ -115,8 +115,8 @@ async function handleRequest(request, env) {
     };
 
     // 根据 config 定义 HTML 模板路径
-    const index_html = "https://yutian81.github.io/slink/" + config.theme + "/index.html";
-    const result_html = "https://yutian81.github.io/slink/" + config.theme + "/result.html";
+    const index_html = "https://blog2.811520.xyz/slink/" + config.theme + "/index.html";
+    const result_html = "https://blog2.811520.xyz/slink/" + config.theme + "/result.html";
     
     // 定义响应头
     let response_header = {
@@ -239,7 +239,7 @@ async function handleRequest(request, env) {
                     headers: response_header,
                 })
             } else {
-                return new Response(`{"status":500, "key": "` + req_key + `", "error":"错误: key不存在或统计功能未开启"}`, {
+                return new Response(`{"status":500, "key": "` + req_key + `", "error":"错误: key不存在"}`, {
                     headers: response_header,
                 })
             }
@@ -261,8 +261,7 @@ async function handleRequest(request, env) {
             let jsonObjectRetrun = JSON.parse(`{"status":200, "error":"", "key":"", "url":""}`);
             jsonObjectRetrun.key = req_key;
             // 访问次数作为 'url' 字段返回给前端，与前端 JS 预期一致
-            jsonObjectRetrun.url = final_count; 
-            
+            jsonObjectRetrun.url = final_count;  
             return new Response(JSON.stringify(jsonObjectRetrun), {
                 headers: response_header,
             })
