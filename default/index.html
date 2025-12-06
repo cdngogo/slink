@@ -26,10 +26,10 @@
         <div class="card-header"><i class="fas fa-plus-circle me-2"></i>生成短链</div>
         <div class="card-body">
           <div class="mb-4">
-            <label for="longURL" class="form-label fw-bold">原始网址</label>
+            <label for="longURL" class="form-label fw-bold">原始链接</label>
             <div class="input-group">
               <span class="input-group-text"><i class="fas fa-link"></i></span>
-              <textarea class="form-control" id="longURL" placeholder="https://example.com"
+              <textarea class="form-control" id="longURL" placeholder="输入长网址生成短链"
                 oninput="loadUrlList()"></textarea>
             </div>
           </div>
@@ -38,7 +38,7 @@
             <label for="keyPhrase" class="form-label fw-bold">自定义短链（可选）</label>
             <div class="input-group">
               <span class="input-group-text"><i class="fas fa-key"></i></span>
-              <input type="text" class="form-control" id="keyPhrase" placeholder="输入自定义Key（字母、数字）"
+              <input type="text" class="form-control" id="keyPhrase" placeholder="支持大小写字母和数字"
                 onkeypress="if(event.keyCode === 13) shorturl()">
               <button class="btn btn-outline-primary" type="button" id="addBtn" onclick="shorturl()">
                 <i class="fas fa-magic me-2"></i>生成
@@ -50,7 +50,7 @@
             <label class="form-label fw-bold">查询短链</label>
             <div class="input-group">
               <span class="input-group-text"><i class="fas fa-search"></i></span>
-              <input type="text" class="form-control" id="keyForQuery" placeholder="输入已有的Key (如: abc123)"
+              <input type="text" class="form-control" id="keyForQuery" placeholder="输入短链Key查长网址"
                 onkeypress="if(event.keyCode === 13) query1KV()">
               <button class="btn btn-outline-primary" type="button" onclick="query1KV()">
                 <i class="fas fa-external-link-alt me-2"></i>查询
