@@ -9,7 +9,7 @@
   <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f517.svg" type="image/svg+xml">
   <title>短链接生成器</title>
   <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yutian81/slink@main/default/style.css"> -->
-  <link rel="stylesheet" href="https://raw.githubusercontent.com/yutian81/slink/main/default/style.css">
+  <link rel="stylesheet" href="https://blog2.811520.xyz/slink/default/style.css">
 </head>
 
 <body>
@@ -29,7 +29,7 @@
             <label for="longURL" class="form-label fw-bold">原始网址</label>
             <div class="input-group">
               <span class="input-group-text"><i class="fas fa-link"></i></span>
-              <textarea class="form-control" id="longURL" placeholder="输入原始网址, 如: https://example.com/"
+              <textarea class="form-control" id="longURL" placeholder="https://example.com"
                 oninput="loadUrlList()"></textarea>
             </div>
           </div>
@@ -50,7 +50,7 @@
             <label class="form-label fw-bold">查询短链</label>
             <div class="input-group">
               <span class="input-group-text"><i class="fas fa-search"></i></span>
-              <input type="text" class="form-control" id="keyForQuery" placeholder="输入已有的短链Key (如: abc123)"
+              <input type="text" class="form-control" id="keyForQuery" placeholder="输入已有的Key (如: abc123)"
                 onkeypress="if(event.keyCode === 13) query1KV()">
               <button class="btn btn-outline-primary" type="button" onclick="query1KV()">
                 <i class="fas fa-external-link-alt me-2"></i>查询
@@ -68,8 +68,7 @@
             <button class="btn btn-success btn-sm" type="button" id="loadListBtn" onclick="loadUrlList()">
               <i class="fas fa-sync-alt me-2"></i>刷新列表
             </button>
-            <button class="btn btn-danger btn-sm" type="button" id="clearlocalStgBtn"
-              onclick="clearLocalStorage(); loadUrlList()">
+            <button class="btn btn-danger btn-sm" type="button" id="clearlocalStgBtn" onclick="clearLocalStorage(); loadUrlList()">
               <i class="fas fa-trash-alt me-2"></i>清空本地
             </button>
             <button class="btn btn-primary btn-sm" type="button" id="loadKV2localStgBtn" onclick="loadKV()">
@@ -111,7 +110,7 @@
         <div class="modal-body">
           <div class="alert alert-info" id="result">暂无结果</div>
           <div id="resultPageHint" class="small text-muted mt-2" style="display: none;">
-            <i class="fas fa-info-circle"></i> 已启用结果页面，访问将看到跳转页
+            <i class="fas fa-info-circle"></i> 已启用跳转页，正在跳转
           </div>
         </div>
         <div class="modal-footer">
@@ -130,7 +129,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/lrsjng/jquery-qrcode@0.18.0/dist/jquery-qrcode.min.js"></script>
   <!-- <script src="https://cdn.jsdelivr.net/gh/yutian81/slink@main/default/main.js"></script> -->
-  <script src="https://raw.githubusercontent.com/yutian81/slink/main/default/main.js">
+  <script src="https://blog2.811520.xyz/slink/default/main.js">
 </body>
 
 </html>
