@@ -1,0 +1,8 @@
+name = "slink"
+main = "_worker.js"
+compatibility_date = "2025-11-17"
+keep_vars = true
+
+[[kv_namespaces]]
+binding = "LINKS" 
+id = "{CF_KV_ID}" # action部署时被变量替换
