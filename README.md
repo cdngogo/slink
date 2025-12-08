@@ -36,23 +36,6 @@
 	- **显示/隐藏二维码**。
 - **主题切换：** 支持手动切换 **明亮/暗黑模式**，并跟随系统主题。
 
-## ⚙️ 部署配置（环境变量）
-
-项目通过 Cloudflare Worker 的环境变量 (`env`) 进行配置，实现灵活的功能开关。
-
-| **环境变量**        | **默认值**    | **描述**                                        |
-| --------------- | ---------- | --------------------------------------------- |
-| `PASSWORD`      | `link`     | **管理面板的访问路径/密码**。用户需访问 `yourdomain.com/link`。 |
-| `THEME`         | `default`  | 界面主题，可切换不同的前端样式路径。                            |
-| `CORS`          | `true`     | 是否开启跨域访问 (CORS)。                              |
-| `UNIQUE_LINK`   | `true`     | 是否开启唯一链接功能（相同 URL 只生成一个短链）。                   |
-| `CUSTOM_LINK`   | `true`     | 是否允许用户自定义短链 Key。                              |
-| `OVERWRITE_KV`  | `true`     | 是否允许覆盖已存在的自定义短链 Key。                          |
-| `SNAPCHAT_MODE` | `false`    | 是否启用阅后即焚模式（访问一次后删除）。                          |
-| `VISIT_COUNT`   | `true`     | 是否启用访问计数功能。                                   |
-| `LOAD_KV`       | `true`     | 是否允许从 KV 批量加载数据到本地列表。                         |
-| `TYPE`          | `shorturl` | 访问模式。`shorturl` 为短链接；`imghost` 为图床模式。         |
-
 ## ⚠️ 关键代码说明
 
 ### 1. 安全与路由
@@ -83,15 +66,23 @@
 
 3. **配置环境变量**
    - 在 Worker 设置中找到"变量"，添加以下变量（根据需要）：
-     - `PASSWORD`，必须: 管理密码
-     - `THEME`，可选: 不设置则启用默认主题，也可设置为 `theme/urlcool`
-     - `CUSTOM_LINK`，可选：是否开启自定义短链后缀，默认关闭，设为`true`可开启
-     - `VISIT_COUNT`，可选：是否开启访问统计，默认关闭，设为`true`可开启
-     - `TYPE`，可选: 系统类型，默认为 `shorturl`，即短链接，也可设置为其他类型，用法多样，详见[原作者教程](#原作者教程)
-     - `LOAD_KV`，可选: 是否加载kv数据，默认关闭，设为`true`可开启
+
+| **环境变量**        | **默认值**    | **描述**                                        |
+| --------------- | ---------- | --------------------------------------------- |
+| `PASSWORD`      | `link`     | **管理面板的访问路径/密码**。用户需访问 `yourdomain.com/link`。 |
+| `THEME`         | `default`  | 界面主题，可切换不同的前端样式路径。                            |
+| `CORS`          | `true`     | 是否开启跨域访问 (CORS)。                              |
+| `UNIQUE_LINK`   | `true`     | 是否开启唯一链接功能（相同 URL 只生成一个短链）。                   |
+| `CUSTOM_LINK`   | `true`     | 是否允许用户自定义短链 Key。                              |
+| `OVERWRITE_KV`  | `true`     | 是否允许覆盖已存在的自定义短链 Key。                          |
+| `SNAPCHAT_MODE` | `false`    | 是否启用阅后即焚模式（访问一次后删除）。                          |
+| `VISIT_COUNT`   | `true`     | 是否启用访问计数功能。                                   |
+| `LOAD_KV`       | `true`     | 是否允许从 KV 批量加载数据到本地列表。                         |
+| `TYPE`          | `shorturl` | 访问模式。`shorturl` 为短链接；`imghost` 为图床模式。         |
+
   
-  4. **访问项目管理页面**
-     访问 `https://your-worker.your-account.workers.dev/<PASSWORD>` 使用管理界面
+4. **访问项目管理页面**
+	访问 `https://your-worker.your-account.workers.dev/<PASSWORD>` 使用管理界面
 
 ## 四. 注意事项
 
