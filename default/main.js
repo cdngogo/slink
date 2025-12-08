@@ -137,7 +137,7 @@ function addUrlToList(shortUrl, longUrl) {
   let child = document.createElement('div')
   child.classList.add("mb-3", "list-group-item")
   let keyItem = document.createElement('div')
-  keyItem.classList.add("input-group")
+  keyItem.classList.add("mt-3", "input-group")
 
   // 删除按钮
   let delBtn = document.createElement('button')
@@ -199,8 +199,8 @@ function addUrlToList(shortUrl, longUrl) {
 // 二维码切换逻辑
 function toggleQrcode(shortUrl) {
   const qrcodeContainer = document.getElementById('qrcode-' + shortUrl); 
-  const qrcodeBtn = document.getElementById('qrcodeBtn-' + shortUrl);
-  const fullUrl = window.location.protocol + "//" + window.location.host + "/" + shortUrl;
+  const qrcodeBtn = document.getElementById('qrcodeBtn-' + shortUrl);
+  const fullUrl = window.location.protocol + "//" + window.location.host + "/" + shortUrl;
   const isVisible = qrcodeContainer.classList.toggle('qrcode-visible');
   
   if (isVisible) {
@@ -211,17 +211,17 @@ function toggleQrcode(shortUrl) {
       minVersion: 1,
       maxVersion: 40,
       ecLevel: 'Q', // 'L', 'M', 'Q' or 'H'
-      size: 192,
+      size: 128,
       text: fullUrl
     });
     qrcodeBtn.classList.replace('btn-info', 'btn-warning');
-    qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="隐藏二维码"></i>';
+  qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="隐藏二维码"></i>';
   } else {
-    setTimeout(() => {
-      qrcodeContainer.innerHTML = '';
-    }, 500);
-    qrcodeBtn.classList.replace('btn-warning', 'btn-info');
-    qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="显示二维码"></i>';
+  setTimeout(() => {
+    qrcodeContainer.innerHTML = '';
+  }, 500);
+  qrcodeBtn.classList.replace('btn-warning', 'btn-info');
+  qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="显示二维码"></i>';
   }
 }
 
@@ -263,8 +263,8 @@ function deleteShortUrl(delKeyPhrase) {
 function queryVisitCount(qryKeyPhrase) {
   const btn = document.getElementById("qryCntBtn-" + qryKeyPhrase);
   const originalIcon = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
   
   // 从KV中查询
   fetch(apiSrv, {
@@ -277,25 +277,25 @@ function queryVisitCount(qryKeyPhrase) {
     res = myJson;
 
     if (res.status == "200") {
-      // 成功：显示统计次数
-      btn.innerHTML = res.url;
-    } else {
-      // 失败：显示错误信息，并恢复按钮图标
-      document.getElementById("result").innerHTML = res.error;
-      btn.innerHTML = originalIcon; // 恢复图标
-      const modal = new bootstrap.Modal(document.getElementById('resultModal'));
-      modal.show();
-    }
+      // 成功：显示统计次数
+      btn.innerHTML = res.url;
+    } else {
+      // 失败：显示错误信息，并恢复按钮图标
+      document.getElementById("result").innerHTML = res.error;
+      btn.innerHTML = originalIcon; // 恢复图标
+      const modal = new bootstrap.Modal(document.getElementById('resultModal'));
+      modal.show();
+    }
     // 无论成功或失败，都重新启用按钮
     btn.disabled = false;
   })
-  .catch(function (err) {
-    // 请求失败时恢复按钮状态
-    alert("Unknow error. Please retry!");
-    console.log(err);
-    btn.innerHTML = originalIcon; // 恢复图标
-    btn.disabled = false; // 启用按钮
-  });
+  .catch(function (err) {
+    // 请求失败时恢复按钮状态
+    alert("Unknow error. Please retry!");
+    console.log(err);
+    btn.innerHTML = originalIcon; // 恢复图标
+    btn.disabled = false; // 启用按钮
+  });
 }
 
 function query1KV(event) {

@@ -168,7 +168,7 @@
   #urlList::-webkit-scrollbar-thumb { background-color: var(--primary-color); border-radius: 4px; }
   
   .list-group-item {
-    padding: 16px;
+    padding: 0 16px 16px 16px;
     margin-bottom: 12px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
@@ -194,31 +194,19 @@
   .list-group-item .input-group .btn:last-child { border-top-right-radius: 8px !important; }
   
   .qrcode-container {
-    display: block;
-    background: var(--qrcode-bg);
+    display: block;
+    background: var(--qrcode-bg);
     border: 1px solid var(--border-color);
-    text-align: center;
+    text-align: center;
     max-height: 0;
     opacity: 0;
     overflow: hidden;
     padding: 0;
     margin: 0 auto;
-    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding 0.5s ease-in-out;
+    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding 0.5s ease-in-out;
   }
-
-  .qrcode-container.qrcode-visible {
-    max-height: 220px;
-    opacity: 1;
-    padding: 10px;
-  }
-  
-  .qrcode-container canvas {
-    display: block;
-    margin: 0 auto;
-    width: auto;
-    height: auto;
-    max-width: 192px;
-  }
+  .qrcode-container.qrcode-visible { max-height: 150px; opacity: 1; padding: 10px; }
+  .qrcode-container canvas { width: auto; height: auto; max-width: 128px; }
   
   /* 模态框 */
   .modal-content { border: none; border-radius: 8px; }
