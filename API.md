@@ -162,7 +162,46 @@ curl -X POST <YOUR_WORKER_URL> \
 
 ---
 
-### 5. 查询全部链接 API
+### 5. 查询访问计数 API
+
+查询指定短链接的访问次数
+
+|**参数 (JSON Body)**|**类型**|**是否必须**|**描述**|
+|---|---|---|---|
+|`cmd`|String|是|必须为 `"qrycnt"`。|
+|`key`|String|是|带统计后缀的 Key。格式为 `短链Key-count`。|
+|`password`|String|是|管理密码。|
+
+#### 示例响应 (`status: 200`)
+
+JSON
+
+```
+{
+  "status": 200,
+  "error": "",
+  "key": "randomkey1-count",
+  "url": "42" // 短链接 "randomkey1" 的总访问次数
+}
+```
+
+#### 💻 `curl` 示例
+
+Bash
+
+```bash
+curl -X POST <YOUR_WORKER_URL> \
+-H "Content-Type: application/json" \
+-d '{
+    "cmd": "qryall",
+    "key": "randomkey1-count",
+    "password": "<YOUR_PASSWORD>"
+}'
+```
+
+---
+
+### 6. 查询全部链接 API
 
 列出 KV 存储中所有非保护、非计数、非 SHA512 哈希的 Key-Value 对。
 
@@ -211,4 +250,3 @@ curl -X POST <YOUR_WORKER_URL> \
 | `https://<YOUR_WORKER_URL>/<YOUR_PASSWORD>` | 返回前端管理页面 (从 GitHub Pages 加载)。                                 |
 | `https://<YOUR_WORKER_URL>/<SHORT_KEY>`     | **重定向:** 如果 Key 存在且非保护，则 302 重定向到原始链接。                        |
 | `https://<YOUR_WORKER_URL>/<SHORT_KEY>`     | **显示图片:** 如果 `system_type` 是 `"imghost"`，则返回 Base64 解码后的图片内容。 |
-
