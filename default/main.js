@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function () {
           if (data.custom_link) {
             // 功能开启：启用输入框，显示默认 placeholder
             customKeyInput.disabled = false;
-            customKeyInput.placeholder = customKeyInput.getAttribute('placeholder') || "输入大小写字母和数字";
+            customKeyInput.placeholder = customKeyInput.getAttribute('placeholder') || "支持中文、字母和数字";
           } else {
             // 功能关闭：禁用输入框，修改 placeholder
             customKeyInput.disabled = true;
