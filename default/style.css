@@ -169,8 +169,8 @@ body {
 
 .list-group-item {
   padding: 16px;
-  margin-bottom: 0 16px 16px 0;
-  border-radius: 8px;
+  margin: 0 16px 16px 0;
+  /*border-radius: 8px;*/
   border: 1px solid var(--border-color);
   transition: all 0.2s;
   overflow-wrap: break-word;
@@ -181,7 +181,7 @@ body {
   background-color: rgba(78, 115, 223, 0.05);
   border-color: rgba(78, 115, 223, 0.2);
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 .list-group-item .text-primary { cursor: pointer; transition: color 0.2s; }
 .list-group-item .text-primary:hover { color: var(--accent-color); }
