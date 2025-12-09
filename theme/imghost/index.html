@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
   <title>Image Hosting</title>
-  <link rel="stylesheet" href="https://yutian81.github.io/slink/theme/imghost/style.css">
-  <!-- 如果使用CDN资源就放开这一句, 把上面那一句注释掉
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yutian81/slink/theme/imghost/styles.css">
-  -->
+  <!-- <link rel="stylesheet" href="/imghost/style.css"> -->
+  <link rel="stylesheet" href="https://blog2.811520.xyz/slink/imghost/style.css">
+  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yutian81/slink/imghost/styles.css"> -->
 </head>
 <body>
   <div class="d-flex align-items-start flex-wrap">
@@ -38,7 +37,7 @@
   </div>
 
   <div class="card shadow m-3">
-    <h5 class="card-header">短链系统变身图床Imgage Hosting</h5>
+    <h5 class="card-header">短链系统变身图床</h5>
     <div class="card-body">
       <h5 class="card-title"> </h5>
       <div class="input-group mb-3">
@@ -65,7 +64,7 @@
     </div>
     
     <div class="card-footer">
-      <span> <a href="https://github.com/crazypeace/Url-Shorten-Worker/" target="_self">Fork me on GitHub</a> </span>
+      <span> <a href="https://github.com/yutian81/slink" target="_self">Github</a> </span>
     </div>
   </div>
 
@@ -112,22 +111,9 @@
       </div>
     </div>
   </div>
-  
-  <div class="card shadow m-3">
-    <h5 class="card-header">How to use</h5>
-    <div class="card-body">
-      <h5 class="card-title"> </h5>
-
-      <div class="input-group mb-3"> 
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/B7wH4tB1-O8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen=""></iframe> 
-       </div> 
-
-    </div>      
-  </div>
 
   <script>
     // 感谢 https://oktools.net/image2base64
-
     let img_input = document.getElementById('img_input');
     let area_base64 = document.getElementById('area_base64');
     
@@ -144,11 +130,9 @@
     }
 
     function syncKeyValue() {
-      // 文件名中的空格转换为"-"连字符
-      // 文件名中的 # 字符 转换为"-"连字符
+      // 文件名中的空格、# 字符转换为"-"连字符
       document.getElementById('keyPhrase').value = document.getElementById('input_file').files[0].name.replace(/\s/g, "-").replace(/#/g, "-");
       document.getElementById('longURL').value = document.getElementById('area_base64').value;
-      // 触发input事件
       document.getElementById("longURL").dispatchEvent(new Event('input', {
         bubbles: true,
         cancelable: true,
@@ -184,9 +168,10 @@
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/gh/lrsjng/jquery-qrcode@0.18.0/dist/jquery-qrcode.min.js" crossorigin="anonymous"></script>
   <script src="https://yutian81.github.io/slink/default/main.js" crossorigin="anonymous"></script>
-  <!-- 如果使用CDN资源就放开这一句, 把上面那一句注释掉
-    <script src="https://cdn.jsdelivr.net/gh/yutian81/slink/default/main.js" crossorigin="anonymous"></script>
-  -->
+  <!-- <script src="/default/main.js" crossorigin="anonymous"></script> -->
+  <script src="https://blog2.811520.xyz/slink/default/main.js" crossorigin="anonymous"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/gh/yutian81/slink/default/main.js" crossorigin="anonymous"></script> -->
+  
   <script>    
     function buildValueImg(longUrl) {
       let valueImg = document.createElement('img')
