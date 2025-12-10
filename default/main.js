@@ -370,59 +370,46 @@ function buildValueTxt(longUrl) {
   return valueTxt
 }
 
+// 主题切换逻辑
+function applyTheme(theme) {
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  if (!themeToggleBtn) return;
+
+  document.body.classList.remove('dark-mode', 'light-mode'); // 先移除所有手动设置的类
+  if (theme === 'dark') {
+      document.body.classList.add('dark-mode'); // 明确设置为暗黑模式
+      themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>'; // 暗黑模式下显示太阳图标（切换到明亮）
+      localStorage.setItem('theme', 'dark');
+  } else if (theme === 'light') {
+      document.body.classList.add('light-mode'); // 明确设置为明亮模式
+      themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>'; // 明亮模式下显示月亮图标（切换到暗黑）
+      localStorage.setItem('theme', 'light');
+  } else {
+      themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+      localStorage.removeItem('theme'); // 默认为明亮主题
+  }
+}
+
+// 事件绑定：DOM加载完成后初始化 Popover 和主题
 document.addEventListener('DOMContentLoaded', function () {
   const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
   popoverTriggerList.map(function (popoverTriggerEl) {
     return new bootstrap.Popover(popoverTriggerEl);
   });
 
-  // 主题切换逻辑
-  const prefersDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  function applyTheme(theme) {
-    const themeToggleBtn = document.getElementById('themeToggleBtn');
-    if (!themeToggleBtn) return;
-    const isSystemDark = prefersDarkQuery.matches;
-
-    document.body.classList.remove('dark-mode', 'light-mode'); // 先移除所有手动设置的类
-    if (theme === 'dark') {
-        document.body.classList.add('dark-mode'); // 明确设置为暗黑模式
-        themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>'; // 暗黑模式下显示太阳图标（切换到明亮）
-        localStorage.setItem('theme', 'dark');
-    } else if (theme === 'light') {
-        document.body.classList.add('light-mode'); // 明确设置为明亮模式
-        themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>'; // 明亮模式下显示月亮图标（切换到暗黑）
-        localStorage.setItem('theme', 'light');
-    } else {
-        // 不添加任何手动类，让浏览器根据 prefers-color-scheme 决定
-        if (isSystemDark) {
-            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
-        } else {
-            themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
-        }
-        localStorage.removeItem('theme');
-    }
-  }
-
   // 初始化主题
   const storedTheme = localStorage.getItem('theme');
   if (storedTheme) {
-      applyTheme(storedTheme);
+    applyTheme(storedTheme);
   } else {
-      applyTheme(null); 
+    applyTheme('light'); // 默认显示为 'light'
   }
 
-  // 主题按钮点击事件
+  // 主题按钮点击事件绑定
   document.getElementById('themeToggleBtn').addEventListener('click', () => {
-      let currentManualTheme = localStorage.getItem('theme');
-      const isSystemDark = prefersDarkQuery.matches;
-      const isCurrentlyDark = (currentManualTheme === 'dark') || (currentManualTheme === null && isSystemDark);
-      let newTheme = isCurrentlyDark ? 'light' : 'dark';
-      applyTheme(newTheme);
-  });
-
-  // 监听系统主题变化
-  prefersDarkQuery.addEventListener('change', () => {
-      if (!localStorage.getItem('theme')) { applyTheme(null); }
+    const isCurrentlyDark = document.body.classList.contains('dark-mode');
+    let newTheme = isCurrentlyDark ? 'light' : 'dark';
+    applyTheme(newTheme);
   });
 
   window.visit_count_enabled = true; // 初始化全局变量

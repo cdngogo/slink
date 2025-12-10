@@ -1,7 +1,7 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* 跟随系统主题-明亮模式 */
@@ -29,27 +29,6 @@
 .footer-link:hover { color: var(--accent-color); }
 .copyright { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; color: var(--text-secondary); gap: 8px; font-size: 14px; }
 
-/* 跟随系统主题-暗黑模式 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --primary-color: #90caf9;
-    --secondary-color: #2d3748;
-    --accent-color: #64b5f6;
-    --text-primary: #f8f9fa;
-    --text-secondary: #adb5bd;
-    --bg-gradient-start: #1a202c;
-    --bg-gradient-end: #2d3748;
-    --card-bg: #2d3748;
-    --input-bg: #4a5568;
-    --border-color: #4a5568;
-    --scrollbar-track: #2d3748;
-    --card-footer-bg: rgba(0, 0, 0, 0.1);
-    --qrcode-bg: rgba(103, 119, 148, 0.8);
-  }
-  .theme-toggle-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
-  .list-group-item:hover { background: rgba(78, 115, 223, 0.1); }
-}
-
 /* 页面和排版 */
 body {
   font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -64,11 +43,7 @@ body {
   cursor: default;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 15px;
-}
+.container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
 
 /* 按钮和表单 */
 .form-control,
@@ -82,31 +57,10 @@ body {
   cursor: auto;
 }
 .form-control:focus { border-color: var(--primary-color); }
-
-.btn {
-  padding: 6px 10px;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.2s;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.btn-primary:hover,
-.btn-primary:focus {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
-}
-
-.btn-xs {
-  padding: 4px 8px;
-  font-size: 12px;
-  line-height: 1.2;
-}
+.btn { padding: 6px 10px; font-weight: 600; border-radius: 8px; transition: all 0.2s; cursor: pointer; }
+.btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+.btn-primary:hover, .btn-primary:focus { background-color: var(--accent-color); border-color: var(--accent-color); }
+.btn-xs { padding: 4px 8px; font-size: 12px; line-height: 1.2; }
 
 /* 卡片布局 */
 .cards-container {
@@ -117,7 +71,6 @@ body {
   width: 100%;
   margin: 20px 0;
 }
-
 .card {
   display: flex;
   flex-direction: column;
@@ -130,12 +83,10 @@ body {
   box-shadow: 0 2px 20px rgba(58, 59, 69, 0.15);
   transition: all 0.3s ease;
 }
-
 .card:hover {
   box-shadow: 0 8px 20px rgba(58, 59, 69, 0.2);
   transform: translateY(-2px);
 }
-
 .card-header {
   background-color: var(--primary-color);
   color: var(--card-bg);
@@ -145,14 +96,12 @@ body {
   padding: 12px 20px;
   border-bottom: none;
 }
-
 .card-body {
   padding: 20px 20px 10px 20px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
 }
-
 .card-footer {
   background-color: var(--card-footer-bg);
   border-top: 1px solid var(--card-footer-border);
@@ -166,12 +115,10 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--primary-color) var(--scrollbar-track);
 }
-
 /* Webkit 滚动条样式 */
 #urlList::-webkit-scrollbar { width: 8px; }
 #urlList::-webkit-scrollbar-track { background: var(--scrollbar-track); }  
 #urlList::-webkit-scrollbar-thumb { background-color: var(--primary-color); border-radius: 4px; }
-
 .list-group-item {
   padding: 16px;
   margin-bottom: 16px;
@@ -198,6 +145,7 @@ body {
 .list-group-item .input-group .btn:last-child { border-top-right-radius: 8px !important; }
 .list-group-item > .form-control:last-child { border-radius: 0 0 8px 8px !important; border-top: none !important; }
 
+/* 二维码显示与隐藏 */
 .qrcode-container {
   display: block;
   background: var(--qrcode-bg);
