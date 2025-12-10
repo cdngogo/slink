@@ -102,7 +102,7 @@ async function handleRequest(request, env) {
     // 读取环境变量
     const config = {
         password: env.PASSWORD || "link",                           // 管理面板路径，默认：/link
-        theme: env.THEME || "default",                              // 主题，可选：theme/urlcool
+        theme: env.THEME || "link",                                 // 可选：img，变身图床
         cors: env.CORS === "false" ? false : true,                  // 跨域，默认：开启
         unique_link: env.UNIQUE_LINK === "false" ? false : true,    // 唯一链接，默认：开启
         custom_link: env.CUSTOM_LINK === "false" ? false : true,    // 自定义短链，默认：开启
