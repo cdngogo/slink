@@ -184,27 +184,6 @@ body {
 }
 .theme-toggle-btn:hover { background-color: rgba(0, 0, 0, 0.5); }
 
-/* 手动切换明亮模式 (Light Mode) */
-body.light-mode {
-  --primary-color: #4e73df;
-  --secondary-color: #f8f9fc;
-  --accent-color: #2e59d9;
-  --text-primary: #2a2b2c;
-  --text-secondary: #6c757d;
-  --bg-gradient-start: #f8f9fc;
-  --bg-gradient-end: #e9ecef;
-  --card-bg: white;
-  --input-bg: white;
-  --border-color: #ced4da;
-  --scrollbar-track: #f1f1f1;
-  --card-footer-bg: rgba(0, 0, 0, 0.03);
-  --card-footer-border: rgba(0, 0, 0, 0.05);
-  --qrcode-bg: white;
-}
-body.light-mode .form-control, body.light-mode .input-group-text { background-color: var(--input-bg); color: var(--text-secondary); }
-body.light-mode .form-control:focus { border-color: var(--primary-color); }
-body.light-mode .form-control::placeholder, body.light-mode .result-tip { color: var(--text-secondary); }
-
 /* 手动切换暗黑模式 (Dark Mode) */
 body.dark-mode {
   --primary-color: #90caf9;
