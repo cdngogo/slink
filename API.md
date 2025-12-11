@@ -131,7 +131,7 @@ curl -X POST https://<worker_domain>/<password> \
   "status": 200,
   "error": "",
   "key": "randomkey1",
-  "url": "42" // 短链接 "randomkey1" 的总访问次数
+  "count": "42" // 总访问次数
 }
 ```
 
