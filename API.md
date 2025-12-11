@@ -1,11 +1,10 @@
 ## 🚀 Slink API 文档
 
-- **基础路径:** `/`
 - **API端点:** `/<password>` 或 `/<password<>/<type>`
 – **type 类型:** `link/img/note/paste`
 - **请求方法:** `POST`
 - **请求头:** `Content-Type: application/json`
-- **请求体:** 必须包含正确的 `cmd` 和 `password` 字段
+- **请求体:** 必须包含正确的 `cmd` 字段
 - **受保护 Key:** `["password", "link", "img", "note", "paste"]` 列表中的 Key 无法被 API 操作（添加、删除、查询）
 
 ---
@@ -19,7 +18,6 @@ curl -X POST https://<worker_domain>/<password<>/<type> \
 -H "Content-Type: application/json" \
 -d '{
     "cmd": "add",
-    "password": "<YOUR_PASSWORD>",
     "url": "https://www.google.com/search?q=custom+key+example",
     "key": "mykey"
 }'
@@ -46,7 +44,6 @@ curl -X POST https://<worker_domain>/<password> \
 -H "Content-Type: application/json" \
 -d '{
     "cmd": "qry",
-    "password": "<YOUR_PASSWORD>",
     "key": "mykey"
 }'
 ```
@@ -70,8 +67,7 @@ curl -X POST https://<worker_domain>/<password> \
 curl -X POST https://<worker_domain><password> \
 -H "Content-Type: application/json" \
 -d '{
-    "cmd": "qryall",
-    "password": "<YOUR_PASSWORD>"
+    "cmd": "qryall"
 }'
 ```
 
@@ -99,7 +95,6 @@ curl -X POST https://<worker_domain>/<password> \
 -H "Content-Type: application/json" \
 -d '{
     "cmd": "del",
-    "password": "<YOUR_PASSWORD>",
     "key": "mykey"
 }'
 ```
@@ -125,8 +120,7 @@ curl -X POST https://<worker_domain>/<password> \
 -H "Content-Type: application/json" \
 -d '{
     "cmd": "qryall",
-    "key": "randomkey1",
-    "password": "<YOUR_PASSWORD>"
+    "key": "randomkey1"
 }'
 ```
 
