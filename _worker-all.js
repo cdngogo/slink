@@ -56,10 +56,7 @@ async function randomString(len) {
 
 async function sha512(url) {
   url = new TextEncoder().encode(url)
-  const url_digest = await crypto.subtle.digest(
-    { name: "SHA-512" },
-    url
-  )
+  const url_digest = await crypto.subtle.digest( { name: "SHA-512" }, url )
   const hashArray = Array.from(new Uint8Array(url_digest));
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   return hashHex
@@ -111,24 +108,24 @@ async function system_password(env, config) {
 async function handleRequest(request, env) {
   // 读取环境变量配置
   const config = {
-      password: env.PASSWORD || "yutian81",
-      system_type: env.TYPE || "link",
-      unique_link: env.UNIQUE_LINK === "false" ? false : true,
-      custom_link: env.CUSTOM_LINK === "false" ? false : true,
-      overwrite_kv: env.OVERWRITE_KV === "false" ? false : true,
-      snapchat_mode: env.SNAPCHAT_MODE === "true" ? true : false,
-      visit_count: env.VISIT_COUNT === "false" ? false : true,
-      load_kv: env.LOAD_KV === "false" ? false : true,
+    password: env.PASSWORD || "admin",
+    system_type: env.TYPE || "link",
+    unique_link: env.UNIQUE_LINK === "false" ? false : true,
+    custom_link: env.CUSTOM_LINK === "false" ? false : true,
+    overwrite_kv: env.OVERWRITE_KV === "false" ? false : true,
+    snapchat_mode: env.SNAPCHAT_MODE === "true" ? true : false,
+    visit_count: env.VISIT_COUNT === "false" ? false : true,
+    load_kv: env.LOAD_KV === "false" ? false : true,
   };
 
   const password_value = await system_password(env, config); // 获取系统密码
   
   // 定义全局默认响应头 (包含CORS) 
   let response_header = {
-      "Content-type": "text/html;charset=UTF-8;application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+    "Content-type": "text/html;charset=UTF-8;application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
   }
 
   // --- 统一处理 OPTIONS 请求 ---
@@ -140,7 +137,7 @@ async function handleRequest(request, env) {
   if (request.method === "POST") {
       let req;
       try {
-          req = await request.json(); // 增加 try/catch 捕获 JSON 错误
+          req = await request.json();
       } catch (e) {
           return new Response(`{"status":500, "error":"错误: 无效的JSON格式"}`, { headers: response_header });
       }
@@ -158,7 +155,11 @@ async function handleRequest(request, env) {
 
       switch (req_cmd) {
           case "config":
-              response_data = { status: 200, visit_count: config.visit_count, custom_link: config.custom_link };
+              response_data = {
+                status: 200,
+                visit_count: config.visit_count,
+                custom_link: config.custom_link
+              };
               break;
           
           case "add":
