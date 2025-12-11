@@ -318,10 +318,9 @@ function queryVisitCount(qryKeyPhrase) {
     return response.json();
   }).then(function (myJson) {
     res = myJson;
-
     if (res.status == "200") {
       // 成功：显示统计次数
-      btn.innerHTML = res.count;
+      btn.innerHTML = res.url;
     } else {
       // 失败：显示错误信息，并恢复按钮图标
       document.getElementById("result").innerHTML = res.error;
