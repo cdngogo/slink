@@ -131,7 +131,7 @@ curl -X POST https://<worker_domain>/<password> \
   "status": 200,
   "error": "",
   "key": "randomkey1",
-  "count": "42" // 总访问次数
+  "url": "42" // 总访问次数
 }
 ```
 
