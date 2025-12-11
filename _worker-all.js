@@ -8,19 +8,27 @@ export default {
     }
 };
 
-// 404页面HTML
-const html404 = `<!DOCTYPE html>
-<html>
-  <body>
-    <h1>404 未找到</h1>
-    <p>您访问的页面不存在</p>
-    <p>需要在域名后加入 "/你设置的密码/系统类型" 访问管理页面</p>
-    <p>项目开源地址：<a href="https://github.com/yutian81/slink" target="_blank">访问 GitHub 项目</a></p>
-  </body>
-</html>`
-
 const system_base_url = "https://blog2.811520.xyz/slink"; // 基础URL
 const main_html = `${system_base_url}/index.html`; // 根目录聚合页面模板
+const html_404 = `${system_base_url}/404.html`;
+
+async function get404Html() {
+    try {
+        const response = await fetch(html_404);
+        if (response.status === 200) { return await response.text(); }
+    } catch (e) {
+        console.error("无法从外部URL获取404 HTML:", e);
+    }
+    return `<!DOCTYPE html>
+<html>
+ <head><title>404 Not Found</title></head>
+ <body>
+   <h1>404 未找到</h1>
+   <p>您访问的页面不存在</p>
+   <p>访问作者博客获取教程：<a href="https://blog.notett.com" target="_blank">QingYun Blog</a></p>
+ </body>
+</html>`;
+}
 
 // 工具函数
 function base64ToBlob(base64String) {
@@ -262,10 +270,11 @@ async function handleRequest(request, env) {
   // -----------------------------------------------------------------
   const requestURL = new URL(request.url)
   const pathSegments = requestURL.pathname.split("/").filter(p => p.length > 0)
+  const html404 = await get404Html();
   
   // 处理 / 根路径
   if (pathSegments.length === 0) {
-    return new Response(html404, { headers: response_header, status: 404 });
+    return new Response(html404, { headers: response_header, status: 404 }); 
   }
   
   // 处理管理员路径 /密码 或 /密码/系统类型
