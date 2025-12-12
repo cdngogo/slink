@@ -1,4 +1,139 @@
-RITE_KV === "false" ? false : true,
+// 受保护的KEY列表
+const protect_keylist = ["password", "link", "img", "note", "paste", "admin"];
+
+// 主导出函数
+export default {
+    async fetch(request, env, ctx) {
+        return handleRequest(request, env, ctx);
+    }
+};
+
+const system_base_url = "https://blog2.811520.xyz/slink"; // 基础URL
+const main_html = `${system_base_url}/index.html`; // 根目录聚合页面模板
+const html_404 = `${system_base_url}/404.html`;
+
+async function get404Html() {
+    try {
+        const response = await fetch(html_404);
+        if (response.status === 200) { return await response.text(); }
+    } catch (e) {
+        console.error("无法从外部URL获取404 HTML:", e);
+    }
+    return `<!DOCTYPE html>
+<html>
+ <head><title>404 Not Found</title></head>
+ <body>
+   <h1>404 未找到</h1>
+   <p>您访问的页面不存在</p>
+   <p>访问作者博客获取教程：<a href="https://blog.notett.com" target="_blank">QingYun Blog</a></p>
+ </body>
+</html>`;
+}
+
+// 工具函数
+function base64ToBlob(base64String) {
+  var parts = base64String.split(';base64,');
+  var contentType = parts[0].split(':')[1];
+  var raw = atob(parts[1]);
+  var rawLength = raw.length;
+  var uInt8Array = new Uint8Array(rawLength);
+  for (var i = 0; i < rawLength; ++i) {
+    uInt8Array[i] = raw.charCodeAt(i);
+  }
+  return new Blob([uInt8Array], { type: contentType });
+}
+
+// 获取图片类型
+function getBlobAndContentType(base64String) {
+    if (!base64String || !base64String.startsWith("data:image/")) {
+        return null; // 不是图片 Base64 格式
+    }
+
+    try {
+        const parts = base64String.split(';base64,');
+        if (parts.length !== 2) return null;
+        let contentType = parts[0].split(':')[1];
+        if (!contentType) return null;
+        const base64Data = parts[1];
+        
+        // Content-Type 嗅探
+        if (base64String.startsWith("data:image/jpeg")) {
+            contentType = "image/jpeg";
+        } else if (base64String.startsWith("data:image/png")) {
+            contentType = "image/png";
+        } else if (base64String.startsWith("data:image/gif")) {
+            contentType = "image/gif";
+        } else if (base64String.startsWith("data:image/webp")) {
+            contentType = "image/webp";
+        } else if (base64String.startsWith("data:image/svg+xml")) {
+            contentType = "image/svg+xml";
+        } else if (base64String.startsWith("data:image/bmp")) {
+             contentType = "image/bmp";
+        } else if (base64String.startsWith("data:image/tiff")) {
+             contentType = "image/tiff";
+        } else if (base64String.startsWith("data:image/x-icon")) {
+             contentType = "image/x-icon";
+        }
+
+        const optimizedBase64String = `data:${contentType};base64,${base64Data}`;
+        const blob = base64ToBlob(optimizedBase64String);
+        return { blob, contentType };
+    } catch (e) {
+        console.error("Base64解析或Blob创建错误:", e);
+        return null;
+    }
+}
+
+async function randomString(len) {
+  len = len || 5;
+  let chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
+  let maxPos = chars.length;
+  let result = '';
+  for (let i = 0; i < len; i++) {
+    result += chars.charAt(Math.floor(Math.random() * maxPos));
+  }
+  return result;
+}
+
+async function sha512(url) {
+  url = new TextEncoder().encode(url)
+  const url_digest = await crypto.subtle.digest( { name: "SHA-512" }, url )
+  const hashArray = Array.from(new Uint8Array(url_digest));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex
+}
+
+async function checkURL(URL) {
+  let str = URL;
+  let Expression = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
+  let objExp = new RegExp(Expression);
+  if (objExp.test(str)) { return true; } 
+  else { return false; }
+}
+
+async function save_url(URL, env) {
+  let random_key = await randomString()
+  let is_exist = await env.LINKS.get(random_key) 
+  if (is_exist == null) {
+    await env.LINKS.put(random_key, URL) 
+    return random_key
+  } else { return save_url(URL, env) }
+}
+
+async function is_url_exist(url_sha512, env) {
+  let is_exist = await env.LINKS.get(url_sha512)
+  if (is_exist == null) { return false } 
+  else { return is_exist }
+}
+
+// 主请求处理函数
+async function handleRequest(request, env, ctx) {
+  // 读取环境变量配置
+  const config = {
+    password: env.PASSWORD || "admin",
+    unique_link: env.UNIQUE_LINK === "false" ? false : true,
+    custom_link: env.CUSTOM_LINK === "false" ? false : true,
+    overwrite_kv: env.OVERWRITE_KV === "false" ? false : true,
     snapchat_mode: env.SNAPCHAT_MODE === "true" ? true : false,
     visit_count: env.VISIT_COUNT === "true" ? true : false,
     load_kv: env.LOAD_KV === "false" ? false : true,
