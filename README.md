@@ -69,8 +69,8 @@
 | `CUSTOM_LINK`   | `true`     | 是否允许用户自定义短链 Key                             |
 | `OVERWRITE_KV`  | `true`     | 是否允许覆盖已存在的自定义短链 Key                         |
 | `SNAPCHAT_MODE` | `false`    | 是否启用阅后即焚模式（访问一次后删除）                         |
-| `VISIT_COUNT`   | `true`     | 是否启用访问计数功能                                |
-| `LOAD_KV`       | `true`     | 是否允许从 KV 批量加载数据到本地列表                         |
+| `VISIT_COUNT`   | `false`     | 是否启用访问计数功能                                |
+| `LOAD_KV`       | `true`     | 是否允许从 KV 加载数据，需要绑定变量名为 `LINKS` 的KV空间 |
 
 4. **访问项目管理页面**
 
@@ -87,13 +87,15 @@
 
 ## API 调用
 
+- 端点: /<password>
+
 | 命令 | 方法 | 参数 | 描述 |
 |------|------|------|------|
-| add  | POST | url, password, key | 创建短链接 |
-| del  | POST | key, password | 删除短链接 |
-| qry  | POST | key, password | 查询短链接 |
-| qrycnt  | POST | key, password | 查询访问计数 |
-| qryall | POST | password | 查询所有短链接 |
+| add  | POST | url, key | 创建短链接 |
+| del  | POST | key | 删除短链接 |
+| qry  | POST | key | 查询短链接 |
+| qrycnt | POST | key | 查询访问计数 |
+| qryall | POST | 无 | 查询所有短链接 |
 
 详见 [API说明文档](https://github.com/yutian81/slink/blob/main/API.md)
 
