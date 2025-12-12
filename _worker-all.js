@@ -150,7 +150,7 @@ async function handleRequest(request, env) {
     custom_link: env.CUSTOM_LINK === "false" ? false : true,
     overwrite_kv: env.OVERWRITE_KV === "false" ? false : true,
     snapchat_mode: env.SNAPCHAT_MODE === "true" ? true : false,
-    visit_count: env.VISIT_COUNT === "false" ? false : true,
+    visit_count: env.VISIT_COUNT === "true" ? true : false,
     load_kv: env.LOAD_KV === "false" ? false : true,
   };
 
