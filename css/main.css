@@ -1,14 +1,12 @@
-.form-label { color: var(--text-primary); }
-.form-control::placeholder { color: var(--text-secondary); }
-.result-tip { color: var(--text-secondary); }
-body.dark-mode .form-control, body.dark-mode .input-group-text { background-color: var(--input-bg); color: var(--text-secondary); }
-body.dark-mode .form-control:focus { border-color: var(--primary-color); }
-body.dark-mode .form-control::placeholder, body.dark-mode .result-tip { color: var(--text-secondary); }
-
 /* 主容器 */
-.container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 
 /* 按钮和表单 */
+.form-label { color: var(--text-primary); }
 .form-control,
 .input-group-text {
   padding: 10px;
@@ -19,11 +17,12 @@ body.dark-mode .form-control::placeholder, body.dark-mode .result-tip { color: v
   border-color: var(--border-color);
   cursor: auto;
 }
+.result-tip,
+.form-control::placeholder { color: var(--text-secondary); }
 .form-control:focus { border-color: var(--primary-color); }
 .btn { padding: 6px 10px; font-weight: 600; border-radius: 8px; transition: all 0.2s; cursor: pointer; }
 .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
 .btn-primary:hover, .btn-primary:focus { background-color: var(--accent-color); border-color: var(--accent-color); }
-.btn-xs { padding: 4px 8px; font-size: 12px; line-height: 1.2; }
 
 /* 卡片布局 */
 .cards-container {
@@ -98,7 +97,6 @@ body.dark-mode .form-control::placeholder, body.dark-mode .result-tip { color: v
 }
 .list-group-item .text-primary { cursor: pointer; transition: color 0.2s; }
 .list-group-item .text-primary:hover { color: var(--accent-color); }
-/* 仅为两端元素设置顶部的圆角，以匹配列表项的圆角 */
 .list-group-item .input-group .form-control,
 .list-group-item .input-group .btn { border-radius: 0 !important; }
 .list-group-item .input-group .form-control:first-child { border-top-left-radius: 8px !important; }
@@ -133,5 +131,5 @@ body.dark-mode .form-control::placeholder, body.dark-mode .result-tip { color: v
   .card { flex: 1 1 100%; width: 100%; min-width: 100%; max-width: 100%; margin-bottom: 0; }
   .form-control::placeholder, .text-center { font-size: 13px; }
   .theme-toggle-btn { right: 15px; }
-  .corner-btns { margin-bottom: 20px; }
+  .corner-btns { margin-bottom: 15px; }
 }
