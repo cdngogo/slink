@@ -131,5 +131,5 @@
   .cards-container { flex-direction: column; gap: 20px; }
   .card { flex: 1 1 100%; width: 100%; min-width: 100%; max-width: 100%; margin-bottom: 0; }
   .form-control::placeholder, .text-center { font-size: 13px; }
-  .corner-btns { top: 15px; right: 15px}
+  .corner-btns { top: 5px; right: 5px}
 }
