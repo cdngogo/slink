@@ -127,9 +127,10 @@
 
 /* 媒体查询 - 768px (布局切换：两栏变单栏) */
 @media (max-width: 768px) {
-  .container, .card-footer { padding-top: 40px; }
+  .container, .card-footer { padding-top: 20px; }
   .cards-container { flex-direction: column; gap: 20px; }
   .card { flex: 1 1 100%; width: 100%; min-width: 100%; max-width: 100%; margin-bottom: 0; }
   .form-control::placeholder, .text-center { font-size: 13px; }
-  .corner-btns { top: 5px; right: 5px}
+  .body { padding-top: 5px; }
+  .corner-btns { top: 15px; right: 15px}
 }
