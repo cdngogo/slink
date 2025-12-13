@@ -32,7 +32,7 @@ body.dark-mode .form-control::placeholder, body.dark-mode .result-tip { color: v
   flex-wrap: wrap;
   gap: 20px;
   width: 100%;
-  margin: 20px 0;
+  margin: 20px 0 0 0;
 }
 .card {
   display: flex;
