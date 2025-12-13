@@ -5,7 +5,7 @@
 }
 
 /* 默认明亮模式 */
-    :root {
+:root {
     --primary-color: #4e73df;
     --secondary-color: #f8f9fc;
     --accent-color: #2e59d9;
@@ -34,7 +34,8 @@ body {
 }
 
 /* 页脚 */
-.card-footer { padding: 10px 20px;
+.card-footer { 
+    padding: 12px 20px;
     background-color: transparent;
     border: none;
 }
@@ -53,23 +54,6 @@ body {
 .modal-content { border: none; border-radius: 8px; }
 .modal-header { border-radius: 8px 8px 0 0 !important; }
 .alert-info { margin-bottom: 0 }
-
-/* 手动切换暗黑模式 (Dark Mode) */
-body.dark-mode {
-    --primary-color: #90caf9;
-    --secondary-color: #2d3748;
-    --accent-color: #64b5f6;
-    --text-primary: #f8f9fa;
-    --text-secondary: #adb5bd;
-    --bg-gradient-start: #1a202c;
-    --bg-gradient-end: #2d3748;
-    --card-bg: #2d3748;
-    --input-bg: #4a5568;
-    --border-color: #6a7588;
-    --scrollbar-track: #2d3748;
-    --qrcode-bg: rgba(73, 90, 122, 0.8);
-}
-body.dark-mode .theme-toggle-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
 
 /* 角标元素 */
 .corner-btns {
@@ -114,3 +98,21 @@ body.dark-mode .theme-toggle-btn:hover { background-color: rgba(255, 255, 255, 0
 .theme-toggle-btn { color: var(--text-primary); background-color: transparent; transition: all 0.2s; }
 .type-toggle-btn:hover,
 .theme-toggle-btn:hover { background-color: rgba(0, 0, 0, 0.2); }
+
+/* 手动切换暗黑模式 (Dark Mode) */
+body.dark-mode {
+    --primary-color: #90caf9;
+    --secondary-color: #2d3748;
+    --accent-color: #64b5f6;
+    --text-primary: #f8f9fa;
+    --text-secondary: #adb5bd;
+    --bg-gradient-start: #1a202c;
+    --bg-gradient-end: #2d3748;
+    --card-bg: #2d3748;
+    --input-bg: #4a5568;
+    --border-color: #6a7588;
+    --scrollbar-track: #2d3748;
+    --qrcode-bg: rgba(73, 90, 122, 0.8);
+}
+body.dark-mode .type-toggle-btn:hover
+body.dark-mode .theme-toggle-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
