@@ -4,13 +4,13 @@ let longUrlElement;
 let urlListElement;
 
 // 解析路径以确定当前模式
-const pathnameSegments = window.location.pathname.split("/").filter(p => p.length > 0); 
-window.adminPath = pathnameSegments.length > 0 ? '/' + pathnameSegments[0] : '';
+const pathnameSegments = window.location.pathname.split('/').filter(Boolean);
+window.adminPath = pathnameSegments[0] ? '/' + pathnameSegments[0] : '';
+const modeFromPath = pathnameSegments[1];
 let apiSrv = window.adminPath
 let api_password = document.querySelector("#passwordText").value;
-const modeFromPath = pathnameSegments.length >= 2 ? pathnameSegments[1] : (pathnameSegments.length === 1 ? 'link' : '');
 window.current_mode = ['link', 'img', 'note', 'paste'].includes(modeFromPath) ? modeFromPath : 'link';
-window.visit_count_enabled = false; // 必须是全局的，供 addUrlToList 和 loadConfig 使用
+window.visit_count_enabled = false;
 
 function buildValueTxt(longUrl) {
   let valueTxt = document.createElement('div')
@@ -233,7 +233,7 @@ function toggleQrcode(shortUrl) {
 
 // 生成短链
 function shorturl(event) {
-  if (event) { event.preventDefault(); if (event.keyCode && event.keyCode !== 13) return; }
+  if (event) { if (event.key === "Enter") { event.preventDefault(); } else {return;} }
   if (longUrlElement.value == "") { showResultModal("URL不能为空!"); return; }
 
   const addBtn = document.getElementById("addBtn");
@@ -248,7 +248,7 @@ function shorturl(event) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       cmd: "add",
-      url: longUrlElement.value,
+      url: longUrlElement.value.trim(),
       key: document.querySelector("#keyPhrase").value,
       password: api_password,
       type: window.current_mode
