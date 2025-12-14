@@ -1,6 +1,5 @@
-
 // 受保护的KEY列表
-const protect_keylist = ["password", "link", "img", "note", "paste"];
+const protect_keylist = ["password", "link", "img", "note", "paste", "theme"];
 
 // 主导出函数
 export default {
@@ -14,13 +13,7 @@ const main_html = `${system_base_url}/index.html`; // 默认为短链页面
 const html_404 = `${system_base_url}/404.html`;
 
 async function get404Html() {
-  try {
-    const response = await fetch(html_404);
-    if (response.status === 200) { return await response.text(); }
-  } catch (e) {
-    console.error("无法从外部URL获取404 HTML:", e);
-  }
-  return `
+  const defaultHtml = `
     <!DOCTYPE html>
     <html>
     <head><title>404 Not Found</title></head>
@@ -31,18 +24,24 @@ async function get404Html() {
     </body>
     </html>
   `;
+  try {
+    const response = await fetch(html_404);
+    if (response.status === 200) { return await response.text(); }
+  } catch (e) {
+    console.error("无法从外部URL获取404 HTML:", e);
+  }
+  return defaultHtml;
 }
 
 // 工具函数
 function base64ToBlob(contentType, base64Data) {
-  var raw = atob(base64Data); // 直接使用 Base64 数据部分
+  var raw = atob(base64Data);
   var rawLength = raw.length;
   var uInt8Array = new Uint8Array(rawLength);
   for (var i = 0; i < rawLength; ++i) { uInt8Array[i] = raw.charCodeAt(i); }
   return new Blob([uInt8Array], { type: contentType });
 }
 
-// 获取图片类型
 function getBlobAndContentType(base64String) {
   if (!base64String || !base64String.startsWith("data:image/")) { return null; }
   
@@ -51,9 +50,9 @@ function getBlobAndContentType(base64String) {
     if (parts.length !== 2) return null;
     let contentType = parts[0].split(':')[1];
     if (!contentType) return null;
-    const base64Data = parts[1]; // 获取到 Base64 数据主体
-  
-    // Content-Type 嗅探
+    const base64Data = parts[1];
+    
+    // Content-Type 嗅探 (保持原有逻辑)
     if (base64String.startsWith("data:image/jpeg")) { contentType = "image/jpeg"; }
     else if (base64String.startsWith("data:image/png")) { contentType = "image/png"; }
     else if (base64String.startsWith("data:image/gif")) { contentType = "image/gif"; }
@@ -62,7 +61,7 @@ function getBlobAndContentType(base64String) {
     else if (base64String.startsWith("data:image/bmp")) { contentType = "image/bmp"; }
     else if (base64String.startsWith("data:image/tiff")) { contentType = "image/tiff"; }
     else if (base64String.startsWith("data:image/x-icon")) { contentType = "image/x-icon"; }
-    // 直接传入 Content-Type 和 Base64 数据主体
+    
     const blob = base64ToBlob(contentType, base64Data);
     return { blob, contentType };
   } catch (e) { console.error("Base64解析或Blob创建错误:", e); return null; }
@@ -109,82 +108,34 @@ async function is_url_exist(url_sha512, env) {
   else { return is_exist }
 }
 
-// 主请求处理函数
-async function handleRequest(request, env, ctx) {
-  // 读取环境变量配置
-  const config = {
-    admin: env.ADMIN || "admin", // 管理密码
-    password: env.PASSWORD || "apipass", // API秘钥
-    unique_link: env.UNIQUE_LINK === "false" ? false : true,
-    custom_link: env.CUSTOM_LINK === "false" ? false : true,
-    overwrite_kv: env.OVERWRITE_KV === "false" ? false : true,
-    snapchat_mode: env.SNAPCHAT_MODE === "true" ? true : false,
-    visit_count: env.VISIT_COUNT === "true" ? true : false,
-    load_kv: env.LOAD_KV === "false" ? false : true,
-  };
-
-  // 定义响应头
-  const base_cors_header = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS", // 包含 GET 以确保短链访问正常
-    "Access-Control-Allow-Headers": "Content-Type",
-  };
-  const html_response_header = { ...base_cors_header, "Content-type": "text/html;charset=UTF-8", };
-  const json_response_header = { ...base_cors_header, "Content-type": "application/json", };
-  const text_response_header = { ...base_cors_header, "Content-type": "text/plain;charset=UTF-8", };
-
-  // 定义常量
-  const api_password = config.password.trim();
-  const html404 = await get404Html();
-  const response404 = () => new Response(html404, { headers: html_response_header, status: 404 });
-
-  // 定义密码和系统类型
-  const requestURL = new URL(request.url)
-  const pathSegments = requestURL.pathname.split("/").filter(p => p.length > 0)
-  const admin_password = pathSegments.length > 0 ? pathSegments[0] : ""; // 管理密码为路径的第一段
-  const system_type = pathSegments.length >= 2 ? pathSegments[1] : ""; // 模块类型为路径的第二段
-    
-  // 处理 OPTIONS 请求
-  if (request.method === "OPTIONS") { return new Response(``, { headers: text_response_header }); }
-
-  // -----------------------------------------------------------------
-  // 【API 接口处理】 (POST 请求)
-  // -----------------------------------------------------------------
-  if (request.method === "POST") {
-    if (pathSegments.length === 0 || admin_password !== config.admin) {
-      return new Response(`{"status":401, "error":"错误: 无效的API端点"}`, { headers: json_response_header, status: 401 });
+// 检查 load_kv 配置
+function handleKvCheckAndRespond(config, headers, commandType = "执行操作") {
+    if (!config.load_kv) {
+        const errorMsg = commandType === "查询操作" 
+            ? "错误: 载入kv功能未启用" 
+            : `错误: 载入kv功能未启用, 无法执行${commandType}`;
+        const response_data = { status: 400, error: errorMsg };
+        return new Response(JSON.stringify(response_data), {
+            headers: headers,
+            status: 400
+        });
     }
-  
-    let req;
-    try {
-      req = await request.json();
-    } catch (e) {
-      return new Response(`{"status":400, "error":"错误: 无效的JSON格式"}`, { headers: json_response_header, status: 400 });
-    }
-      
-    const { cmd: req_cmd, url: req_url, key: req_key, type: req_type, password: req_password } = req; // 读取cmd命令参数
-    if (config.password !== req_password) { 
-      return new Response(`{"status":401, "error":"错误: 无效的API秘钥"}`, { headers: json_response_header, status: 401 });
-    }
-    
-    // 检查 Key 保护和 KV 启用状态
-    const isKeyProtected = (key) => protect_keylist.includes(key);
-    const kvRequiredCommands = ["add", "del", "qry", "qrycnt"];
-    if (kvRequiredCommands.includes(req_cmd) && !config.load_kv) {
-      return new Response(
-        JSON.stringify({ status: 400, error: "错误: 载入kv功能未启用" }),
-        { headers: json_response_header, status: 400 }
-      );
-    }
+    return null;
+}
 
+// 处理所有 POST 请求的 API 命令
+async function handleApiCommand(req, env, config, json_response_header, ctx) {
+    const { cmd: req_cmd, url: req_url, key: req_key, type: req_type } = req;
     let response_data = { status: 400, error: `错误: 未知的命令 ${req_cmd}` };
+    const isKeyProtected = (key) => protect_keylist.includes(key);
     let http_status = 400;
 
     switch (req_cmd) {
       case "config":
-        response_data = { status: 200,
-          visit_count: config.visit_count,
-          custom_link: config.custom_link
+        response_data = {
+            status: 200,
+            visit_count: config.visit_count,
+            custom_link: config.custom_link
         };
         http_status = 200;
         break;
@@ -192,7 +143,7 @@ async function handleRequest(request, env, ctx) {
       case "add":
         if (req_type === "link") {
           if (!await checkURL(req_url)) {
-            response_data.error = `错误: 长链接类型必须是有效的URL`; http_status = 400;
+            response_data.error = `错误: 短链类型必须是有效的URL`; http_status = 400;
             break;
           }
         } else if (req_type === "img") {
@@ -227,8 +178,7 @@ async function handleRequest(request, env, ctx) {
           }
         } else { final_key = await save_url(req_url, env); }
         
-        // 统一处理成功或KV写入失败的返回
-        if (final_key && http_status === 200) { 
+        if (final_key && http_status === 200) {
           response_data = { status: 200, key: final_key, error: "" };
         } else if (!final_key && http_status === 200) {
           response_data = { status: 507, key: "", error: "错误: 达到KV写入限制" }; http_status = 507;
@@ -236,184 +186,186 @@ async function handleRequest(request, env, ctx) {
         break;
         
       case "del":
+        const delCheck = handleKvCheckAndRespond(config, json_response_header, "删除操作");
+        if (delCheck) return delCheck;
+
         http_status = 200;
-        let keysInput = req_key;
-        if (typeof req_key === 'string' && req_key.length > 0) {keysInput = [req_key];} // 单 Key 转换为数组
+
+        if (isKeyProtected(req_key)) {
+          response_data = { status: 403, key: req_key, error: "错误: key在保护列表中" }; http_status = 403;
+          break;
+        }
         
-        let primaryKeysToProcess = [];  
-        let keysToFetchData = [];       
-        let deletedCount = 0;           
+        let hash_key_to_delete = null;
+        if (config.unique_link) {
+          const original_url = await env.LINKS.get(req_key);
+          if (original_url) { hash_key_to_delete = await sha512(original_url); }
+        }
         
-        //确定需要处理的主 Key 列表 (keysToFetchData)
-        if (Array.isArray(keysInput) && keysInput.length > 0) {
-          keysToFetchData = keysInput.filter(keyName => !isKeyProtected(keyName));
+        await env.LINKS.delete(req_key);
+        if (config.visit_count) { ctx.waitUntil(env.LINKS.delete(req_key + "-count")); }
+        if (hash_key_to_delete) { ctx.waitUntil(env.LINKS.delete(hash_key_to_delete)); }
+        response_data = { status: 200, key: req_key, error: "" };
+        break;
+
+      case "delall":
+        const delAllCheck = handleKvCheckAndRespond(config, json_response_header, "删除操作");
+        if (delAllCheck) return delAllCheck;
+
+        http_status = 200;
+        
+        let keysToProcess = [];
+        let deletedCount = 0;
+        
+        if (Array.isArray(req_key) && req_key.length > 0) {
+          keysToProcess = req_key;
+          if (config.visit_count) {
+            keysToProcess = [...keysToProcess, ...req_key.map(k => k + "-count")];
+          }
         } else {
           const keyListToDelete = await env.LINKS.list();
-          if (keyListToDelete?.keys) { 
-            keysToFetchData = keyListToDelete.keys.map(item => item.name)
-              .filter(keyName => !( isKeyProtected(keyName) || keyName.endsWith("-count") || keyName.length === 128 ));
-          }
+          if (keyListToDelete?.keys) { keysToProcess = keyListToDelete.keys.map(item => item.name); }
         }
-        if (keysToFetchData.length === 0) {
-          response_data = { status: 200, error: "警告: 没有可删除的key", deleted_count: 0, dellist: [] }; // **字段名修正：使用 dellist**
-          break;
+        
+        if (keysToProcess.length > 0) {
+          const keysToDelete = keysToProcess
+            .filter(keyName => {
+              if (isKeyProtected(keyName)) { return false; }
+              deletedCount++;
+              return true;
+            });
+          
+          const deletePromises = keysToDelete.map(keyName => env.LINKS.delete(keyName));
+          await Promise.all(deletePromises);
+          response_data = {
+            status: 200,
+            error: "",
+            deleted_count: deletedCount,
+          };
+        } else {
+          response_data = { status: 200, error: "警告: 没有可删除的key", deleted_count: 0 };
         }
-    
-        // 预读取数据 (构造 dellist) 并收集哈希计算 Promise
-        const dataPromises = keysToFetchData.map(keyName => env.LINKS.get(keyName));
-        const dataValues = await Promise.all(dataPromises);
-        let deletedDellist = [];
-        let hashPromises = []; 
-        keysToFetchData.forEach((keyName, index) => {
-          const value = dataValues[index];
-          if (value != null) {
-            primaryKeysToProcess.push(keyName);
-            deletedDellist.push({ "key": keyName, "value": value });
-            if (config.unique_link) { hashPromises.push(sha512(value)); } 
-          }
-        });
-        if (primaryKeysToProcess.length === 0) {
-          response_data = { status: 200, error: "警告: 没有可删除的key", deleted_count: 0, dellist: [] };
-          break;
-        }
-    
-        // 构建最终删除列表 (主 Key + Count Key + Hash Key)
-        let hashKeysToDelete = [];
-        if (config.unique_link) { hashKeysToDelete = await Promise.all(hashPromises); }
-        let finalKeysToDelete = [...primaryKeysToProcess];
-        if (config.visit_count) {
-          finalKeysToDelete = [...finalKeysToDelete, ...primaryKeysToProcess.map(k => k + "-count")];
-        }
-        finalKeysToDelete = [...finalKeysToDelete, ...hashKeysToDelete];
-        finalKeysToDelete = [...new Set(finalKeysToDelete)] 
-          .filter(keyName => !isKeyProtected(keyName));
-    
-        // 执行删除并构造响应
-        const deletePromises = finalKeysToDelete.map(keyName => env.LINKS.delete(keyName));
-        await Promise.all(deletePromises);
-        deletedCount = primaryKeysToProcess.length; // 实际成功删除的主 Key 数量
-        response_data = { status: 200, error: "", deleted_count: deletedCount, dellist: deletedDellist };
         break;
 
-      // 短key查长链 (对应前端 query1KV)
       case "qry":
+        const qryCheck = handleKvCheckAndRespond(config, json_response_header, "查询操作");
+        if (qryCheck) return qryCheck;
+
         http_status = 200;
-        const keyToQuery = req_key;
-        
-        if (typeof keyToQuery !== 'string' || keyToQuery.length === 0) {
-            response_data = { status: 400, error: "错误: qry命令必须指定单个有效的Key" }; http_status = 400;
-            break;
-        }
-        if (isKeyProtected(keyToQuery)) {
-            response_data = { status: 403, error: "错误: key在保护列表中" }; http_status = 403;
-            break;
-        }
-        if (keyToQuery.length === 128 || keyToQuery.endsWith("-count")) {
-            response_data = { status: 404, error: "错误: Key 不存在或已过期" }; http_status = 404;
-            break;
-        }
-        
-        const value = await env.LINKS.get(keyToQuery);
-        if (value === null) {
-            response_data = { status: 404, error: "错误: Key 不存在或已过期" }; http_status = 404;
+
+        if (isKeyProtected(req_key)) {
+          response_data = { status: 403, key: req_key, error: "错误: key在保护列表中" }; http_status = 403;
         } else {
-            // 仅返回主 Key 和 Value
-            const qrylist = [{ "key": keyToQuery, "value": value }];
-            response_data = { status: 200, error: "", qrylist: qrylist };
+          const value = await env.LINKS.get(req_key);
+          if (value != null) {
+            response_data = { status: 200, error: "", key: req_key, url: value };
+          } else {
+            response_data = { status: 404, key: req_key, error: "错误: key不存在" }; http_status = 404;
+          }
         }
         break;
         
-      // 查询所有主 Key（对应前端 loadKV)
-      case "qryall":
-        http_status = 200;
-        let keysToQueryAll = [];
-        
-        // 获取所有 Key列表
-        const keyListAll = await env.LINKS.list();
-        if (!keyListAll?.keys) {
-            response_data = { status: 500, error: "错误: 加载key列表失败" }; http_status = 500;
-            break;
-        }
-        
-        // 筛选 Key
-        keysToQueryAll = keyListAll.keys
-          .map(item => item.name)
-          .filter(keyName => !( isKeyProtected(keyName) || keyName.endsWith("-count") || keyName.length === 128 ));
-        if (keysToQueryAll.length === 0) {
-            response_data = { status: 404, error: "警告: 没有找到任何有效的主Key" }; http_status = 404;
-            break;
-        }
-        
-        // 并行获取 Value
-        const urlPromisesAll = keysToQueryAll.map(keyName => env.LINKS.get(keyName));
-        const urlsAll = await Promise.all(urlPromisesAll);
-        let qrylistAll = [];
-        keysToQueryAll.forEach((key, index) => {
-            if (urlsAll[index] != null) { qrylistAll.push({ "key": key, "value": urlsAll[index] }); }
-        });
-        if (qrylistAll.length === 0) {
-            response_data = { status: 404, error: "警告: Key 不存在或已过期" }; http_status = 404;
-            break;
-        }
-        response_data = { status: 200, error: "", qrylist: qrylistAll };
-        break;
-      
       case "qrycnt":
+        const qrycntCheck = handleKvCheckAndRespond(config, json_response_header, "查询计数操作");
+        if (qrycntCheck) return qrycntCheck;
+        
         http_status = 200;
         if (!config.visit_count) {
-          response_data = { status: 400, error: "错误: 统计功能未开启" }; http_status = 400;
-          break;
-        }
-        
-        let keysToCount = [];
-        let countInput = req_key;
-        if (typeof req_key === 'string' && req_key.length > 0) { countInput = [req_key]; }
-        const isExplicitCountQuery = Array.isArray(countInput) && countInput.length > 0;
-        
-        if (isExplicitCountQuery) { // 显式查询模式 (单 Key 或多 Key)
-          keysToCount = countInput.filter(keyName => !isKeyProtected(keyName));
-          if (keysToCount.length === 0) {
-            response_data = { status: 403, error: "错误: 所有 Key 都在保护列表中" }; http_status = 403;
-            break;
-          }
+          response_data = { status: 400, key: req_key, error: "错误: 统计功能未开启" }; http_status = 400;
+        } else if (isKeyProtected(req_key)) {
+          response_data = { status: 403, key: req_key, error: "错误: key在保护列表中" }; http_status = 403;
         } else {
-          const keyList = await env.LINKS.list(); // 查询所有模式（缺少 Key）
-          if (!keyList?.keys) {
-            response_data = { status: 500, error: "错误: 加载key列表失败" }; http_status = 500;
-            break;
-          }
-          keysToCount = keyList.keys 
-            .map(item => item.name)
-            .filter(keyName => !( isKeyProtected(keyName) || keyName.endsWith("-count") || keyName.length === 128 ));
+          const value = await env.LINKS.get(req_key + "-count");
+          const final_count = value ?? "0";
+          response_data = { status: 200, error: "", key: req_key, count: final_count };
         }
-      
-        const countKeys = keysToCount.map(keyName => keyName + "-count"); // 筛选出计数 Key
-        const countPromises = countKeys.map(keyName => env.LINKS.get(keyName)); // 同时查询计数和原始值
-        const valuePromises = keysToCount.map(keyName => env.LINKS.get(keyName)); // 额外查询原始 Value
-        const [counts, values] = await Promise.all([
-          Promise.all(countPromises),
-          Promise.all(valuePromises)
-        ]);
+        break;
+        
+      case "qryall":
+        const qryAllCheck = handleKvCheckAndRespond(config, json_response_header, "查询操作");
+        if (qryAllCheck) return qryAllCheck;
 
-        let countlist = [];
-        keysToCount.forEach((key, index) => {
-          const countValue = counts[index];
-          const originalValue = values[index];
-          if (originalValue != null) {
-            countlist.push({ "key": key, "value": originalValue, "count": countValue ?? "0" });
-          }
-        });
-        
-        if (isExplicitCountQuery && countlist.length === 0) {
-          response_data = { status: 404, error: "错误: Key 不存在或 Key 已过期" }; http_status = 404;
+        http_status = 200;
+        const keyList = await env.LINKS.list();
+        let kvlist = [];
+        if (keyList?.keys) {
+          const filterKeys = (item) => !(
+            isKeyProtected(item.name) || item.name.endsWith("-count") || item.name.length === 128
+          );
+          const filteredKeys = keyList.keys.filter(filterKeys);
+          const urlPromises = filteredKeys.map(item => env.LINKS.get(item.name));
+          const urls = await Promise.all(urlPromises);
+          kvlist = filteredKeys.map((item, index) => ({ "key": item.name, "value": urls[index] }));
+          response_data = { status: 200, error: "", kvlist: kvlist };
         } else {
-          response_data = { status: 200, error: "", countlist: countlist };
+          response_data = { status: 500, error: "错误: 加载key列表失败" }; http_status = 500;
         }
         break;
     }
+    
     return new Response(JSON.stringify(response_data), {
       headers: json_response_header, status: http_status
     });
+}
+
+// 主请求处理函数
+async function handleRequest(request, env, ctx) {
+  // 读取环境变量配置
+  const config = {
+    admin: env.ADMIN || "admin", // 管理密码
+    password: env.PASSWORD || "apipass", // API秘钥
+    unique_link: env.UNIQUE_LINK !== "false",
+    custom_link: env.CUSTOM_LINK !== "false",
+    overwrite_kv: env.OVERWRITE_KV !== "false",
+    snapchat_mode: env.SNAPCHAT_MODE === "true",
+    visit_count: env.VISIT_COUNT === "true",
+    load_kv: env.LOAD_KV !== "false",
+  };
+
+  // 定义响应头
+  const base_cors_header = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+  const html_response_header = { ...base_cors_header, "Content-type": "text/html;charset=UTF-8", };
+  const json_response_header = { ...base_cors_header, "Content-type": "application/json", };
+  const text_response_header = { ...base_cors_header, "Content-type": "text/plain;charset=UTF-8", };
+
+  // 定义常量
+  const api_password = config.password.trim();
+  const html404 = await get404Html();
+  const response404 = () => new Response(html404, { headers: html_response_header, status: 404 });
+
+  // 定义密码和系统类型
+  const requestURL = new URL(request.url)
+  const pathSegments = requestURL.pathname.split("/").filter(p => p.length > 0)
+  const admin_password = pathSegments[0] || "";
+  const system_type = pathSegments[1] || "";
+    
+  // 处理 OPTIONS 请求
+  if (request.method === "OPTIONS") { return new Response(``, { headers: text_response_header }); }
+
+  // -----------------------------------------------------------------
+  // 【API 接口处理】 (POST 请求)
+  // -----------------------------------------------------------------
+  if (request.method === "POST") {
+    if (pathSegments.length === 0 || admin_password !== config.admin) {
+      return new Response(`{"status":401, "error":"错误: 无效的API端点"}`, { headers: json_response_header, status: 401 });
+    }
+    
+    let req;
+    try {
+      req = await request.json();
+    } catch (e) {
+      return new Response(`{"status":400, "error":"错误: 无效的JSON格式"}`, { headers: json_response_header, status: 400 });
+    }
+    
+    if (config.password !== req.password) {
+      return new Response(`{"status":401, "error":"错误: 无效的API秘钥"}`, { headers: json_response_header, status: 401 });
+    }
+    // 将处理转发给api函数
+    return handleApiCommand(req, env, config, json_response_header, ctx);
   }
 
   // -----------------------------------------------------------------
@@ -478,7 +430,7 @@ async function handleRequest(request, env, ctx) {
       return new Response(value, { headers: text_response_header, status: 500 });
     }
   }
-  else if (await checkURL(value)) { // 判断是否为 URL，是则为短链接)
+  else if (checkURL(value)) { // 判断是否为 URL，是则为短链接)
     return Response.redirect(value, 302);
   } 
   else {
