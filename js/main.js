@@ -7,9 +7,9 @@ let urlListElement;
 const pathnameSegments = window.location.pathname.split('/').filter(Boolean);
 window.adminPath = pathnameSegments[0] ? '/' + pathnameSegments[0] : '';
 const modeFromPath = pathnameSegments[1];
-let apiSrv = window.adminPath
+let apiSrv = window.adminPath;
 let api_password = document.querySelector("#passwordText").value;
-window.current_mode = ['link', 'img', 'note', 'paste'].includes(modeFromPath) ? modeFromPath : 'link';
+window.current_mode = ['img', 'note', 'paste'].includes(modeFromPath) ? modeFromPath : 'link';
 window.visit_count_enabled = false;
 
 function buildValueTxt(longUrl) {
@@ -114,7 +114,7 @@ function isDataMode(value, mode) {
 function loadUrlList() {
   const urlList = urlListElement;
   urlList.innerHTML = ''; // 清空列表，移除加载动画
-  const currentMode = window.current_mode; // 获取当前模式
+  const currentMode = window.current_mode || 'link'; // 获取当前模式
   
   let longUrl = longUrlElement.value.trim();
   let keys = [];
@@ -221,7 +221,7 @@ function toggleQrcode(shortUrl) {
       text: fullUrl
     });
     qrcodeBtn.classList.replace('btn-info', 'btn-warning');
-  qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="隐藏二维码"></i>';
+    qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="隐藏二维码"></i>';
   } else {
   setTimeout(() => {
     qrcodeContainer.innerHTML = '';
@@ -249,6 +249,7 @@ function shorturl(event) {
   document.getElementById('keyPhrase').value = document.getElementById('keyPhrase').value
     .replace(/[\s#*|]/g, "-"); // 替换空格 (\s)、#、*、| 为连字符 (-)
   
+  const api_password = document.querySelector("#passwordText").value;
   fetch(apiSrv, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -257,7 +258,7 @@ function shorturl(event) {
       url: longUrlElement.value.trim(),
       key: document.querySelector("#keyPhrase").value,
       password: api_password,
-      type: window.current_mode
+      type: window.current_mode || 'link'
     })
   })
   .then(response => response.json())
@@ -288,6 +289,7 @@ function deleteShortUrl(delKeyPhrase) {
   document.getElementById("delBtn-" + delKeyPhrase).disabled = true;
   document.getElementById("delBtn-" + delKeyPhrase).innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
 
+  const api_password = document.querySelector("#passwordText").value;
   fetch(apiSrv, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -306,7 +308,6 @@ function deleteShortUrl(delKeyPhrase) {
     } else {
       showResultModal(myJson.error || "删除短链接失败");
     }
-
   }).catch(function (err) {
     showResultModal("删除请求失败，请重试!");
     console.log(err);
@@ -319,7 +320,8 @@ function queryVisitCount(qryKeyPhrase) {
   const originalIcon = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
-  
+
+  const api_password = document.querySelector("#passwordText").value;
   fetch(apiSrv, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -360,8 +362,7 @@ function query1KV(event) {
 
   let qryKeyPhrase = document.getElementById("keyForQuery").value;
   if (qryKeyPhrase == "") { return }
-
-  // 从KV中查询
+  const api_password = document.querySelector("#passwordText").value;
   fetch(apiSrv, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -379,7 +380,7 @@ function query1KV(event) {
       document.getElementById("keyPhrase").value = item.key;
       longUrlElement.dispatchEvent(new Event('input', { bubbles: true, cancelable: true, }))
     } else {
-        showResultModal(myJson.error || "查询短链接失败");
+      showResultModal(myJson.error || "查询短链接失败");
     }
   }).catch(function (err) {
       console.log(err);
@@ -389,8 +390,8 @@ function query1KV(event) {
 
 // 从KV加载记录
 function loadKV() {
-  const currentMode = window.current_mode;
-  
+  const currentMode = window.current_mode || 'link';
+  const api_password = document.querySelector("#passwordText").value;
   fetch(apiSrv, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
