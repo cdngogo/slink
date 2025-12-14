@@ -1,9 +1,9 @@
 // --- 全局变量和初始化 ---
-const apiSrv = window.location.pathname;
+let apiSrv = window.location.pathname;
+let buildValueItemFunc = buildValueTxt;
 let api_password;
 let longUrlElement;
 let urlListElement;
-let buildValueItemFunc;
 
 // 路径解析和模式确定
 const pathnameSegments = window.location.pathname.split("/").filter(p => p.length > 0);
@@ -427,7 +427,6 @@ document.addEventListener('DOMContentLoaded', function () {
   longUrlElement = document.querySelector("#longURL");
   urlListElement = document.querySelector("#urlList");
   api_password = document.querySelector("#passwordText").value;
-  buildValueItemFunc = buildValueTxt; 
   document.getElementById("passwordText").readOnly = true;
 
   // 获取后端配置
