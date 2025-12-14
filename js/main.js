@@ -1,26 +1,39 @@
-// let apiSrv = window.location.pathname;
-let buildValueItemFunc = buildValueTxt; // 这是默认行为, 在不同的模式中可以设置为不同的行为
+// --- 全局变量和初始化 ---
+const apiSrv = window.location.pathname;
+let api_password;
 let longUrlElement;
 let urlListElement;
+let buildValueItemFunc;
 
-// 解析路径以确定当前模式
-const pathnameSegments = window.location.pathname.split('/').filter(Boolean);
-window.adminPath = pathnameSegments[0] ? '/' + pathnameSegments[0] : '';
-const modeFromPath = pathnameSegments[1];
-let apiSrv = window.adminPath;
-let api_password = document.querySelector("#passwordText").value;
-window.current_mode = ['img', 'note', 'paste'].includes(modeFromPath) ? modeFromPath : 'link';
-window.visit_count_enabled = false;
+// 路径解析和模式确定
+const pathnameSegments = window.location.pathname.split("/").filter(p => p.length > 0);
+window.adminPath = pathnameSegments.length > 0 ? '/' + pathnameSegments[0] : '';
+const modeFromPath = pathnameSegments.length >= 2 ? pathnameSegments[1] : (pathnameSegments.length === 1 ? 'link' : '');
+window.current_mode = ['link', 'img', 'note', 'paste'].includes(modeFromPath) ? modeFromPath : 'link';
+window.visit_count_enabled = false; // 由后端配置决定
 
-function buildValueTxt(longUrl) {
-  let valueTxt = document.createElement('div')
-  valueTxt.classList.add("form-control")
-  valueTxt.innerText = longUrl
-  return valueTxt
-}
+// --- 实用工具函数 ---
 
 function clearLocalStorage() {
-  localStorage.clear()
+  localStorage.clear();
+}
+
+// 按钮状态管理
+function setButtonState(btnId, state, value = null) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+
+    if (state === 'loading') {
+        btn.disabled = true;
+        btn.dataset.originalHtml = btn.innerHTML; 
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+    } else if (state === 'query-success' && value !== null) {
+        btn.innerHTML = value;
+        btn.disabled = false;
+    } else if (state === 'reset') {
+        btn.innerHTML = btn.dataset.originalHtml || value; 
+        btn.disabled = false;
+    }
 }
 
 // 显示结果模态框
@@ -37,101 +50,93 @@ function handleModalCopy(text) {
   const modalElement = document.getElementById('resultModal');
   const modal = bootstrap.Modal.getInstance(modalElement);
 
-  // 处理复制成功后的视觉反馈和恢复
   const onSuccess = (delay = 1000) => {
     btn.innerHTML = '<i class="fas fa-check me-2"></i>已复制';
-    btn.classList.replace('btn-primary', 'btn-success'); 
+    btn.classList.replace('btn-primary', 'btn-success');
     setTimeout(() => { if (modal) { modal.hide(); } }, delay);
     setTimeout(() => { btn.innerHTML = originalHTML; btn.classList.replace('btn-success', 'btn-primary'); }, delay);
   };
 
-  // 处理复制失败后的视觉反馈和恢复
-  const onFailure = (delay = 1000) => {
+  const onFailure = () => {
     console.error('复制失败：无法执行复制操作');
     btn.innerHTML = '<i class="fas fa-times me-2"></i>失败';
-    setTimeout(() => { btn.innerHTML = originalHTML; }, delay);
+    setTimeout(() => { btn.innerHTML = originalHTML; }, 1000);
   };
 
-  navigator.clipboard.writeText(text).then(() => {
-      onSuccess(); // 现代 API 成功
-  }).catch(() => { // 回退方案
-      const input = document.createElement('input');
-      input.value = text;
-      document.body.appendChild(input);
-      input.select();
-      const success = document.execCommand('copy');
-      document.body.removeChild(input);
-      success ? onSuccess() : onFailure();
+  navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
+    // 回退方案
+    const input = document.createElement('input');
+    input.value = text;
+    document.body.appendChild(input);
+    input.select();
+    const success = document.execCommand('copy');
+    document.body.removeChild(input);
+    success ? onSuccess(500) : onFailure(); // 缩短回退方案的延迟
   });
 }
 
 // 复制短链接
 function copyShortUrl(text, btnId) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  
+  const originalIcon = btn.innerHTML;
   navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById(btnId);
-    if (!btn) return;
-    const originalIcon = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-check" style="color:white"></i>'; // 复制后显示白色的 √
+    btn.innerHTML = '<i class="fas fa-check" style="color:white"></i>';
     setTimeout(() => { btn.innerHTML = originalIcon; }, 2000);
   });
 }
 
-// 获取模式名称
+// 定义所有模式及其属性
+const APP_MODES = {
+  'link': { name: '短链', check: (value) => value.startsWith('http') },
+  'img': { name: '图床', check: (value) => value.startsWith('data:image/') },
+  'note': { name: '记事本', check: (value, isUrl, isImage) => !isUrl && !isImage },
+  'paste': { name: '剪贴板', check: (value, isUrl, isImage) => !isUrl && !isImage }
+};
+
 function getModeName(mode) {
-  switch (mode) {
-    case 'link': return '短链';
-    case 'img': return '图床';
-    case 'note': return '记事本';
-    case 'paste': return '剪贴板';
-    default: return '数据'; // 安全回退
-  }
+  return APP_MODES[mode]?.name || '数据';
 }
 
-// 在不同模式下加载不同数据
 function isDataMode(value, mode) {
   if (!value) return false;
-  let isRelevant = false;
-  
-  switch (mode) {
-    case 'link': // 短链接：值必须是 URL
-      if (value.startsWith('http')) { isRelevant = true; }
-      break;
-    case 'img': // 图床：值必须是 Base64 Data URI (保持您代码中的 'img')
-      if (value.startsWith('data:image/')) { isRelevant = true; }
-      break;
-    case 'note':
-    case 'paste': // 记事本/剪贴板：值不能是 URL 或 Base64 Data URI
-      if (!value.startsWith('http') && !value.startsWith('data:image/')) { isRelevant = true; }
-      break;
-    default: // 默认模式，不过滤
-      isRelevant = true; 
-      break;
+  const modeConfig = APP_MODES[mode];
+  if (!modeConfig) return true;
+  const isUrl = value.startsWith('http');
+  const isImage = value.startsWith('data:image/');
+  if (mode === 'note' || mode === 'paste') {
+    return modeConfig.check(value, isUrl, isImage);
   }
-  return isRelevant;
+  return modeConfig.check(value);
 }
 
-// 加载本地存储列表
+// --- 列表管理函数 ---
+
+// 不同模式下，在列表中加载不同数据
 function loadUrlList() {
   const urlList = urlListElement;
-  urlList.innerHTML = ''; // 清空列表，移除加载动画
-  const currentMode = window.current_mode || 'link'; // 获取当前模式
+  urlList.innerHTML = '';
+  const currentMode = window.current_mode;
+  const longUrl = longUrlElement.value.trim();
   
-  let longUrl = longUrlElement.value.trim();
   let keys = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key === 'theme') { continue; } // 跳过主题设置项
-    keys.push(key);
+    if (key !== 'theme') { keys.push(key); }
   }
   
   keys.reverse().forEach(keyShortURL => {
-    let valueLongURL = localStorage.getItem(keyShortURL)
-    if (!isDataMode(valueLongURL, currentMode)) { return; }
-    // 如果长链接为空，加载所有匹配模式的记录；否则，加载匹配模式且匹配输入框的记录
-    if (longUrl === "" || (longUrl === valueLongURL)) { addUrlToList(keyShortURL, valueLongURL) }
+    let valueLongURL = localStorage.getItem(keyShortURL);
+    // 过滤模式和搜索条件
+    const isMatchingMode = isDataMode(valueLongURL, currentMode);
+    const isMatchingSearch = (longUrl === "" || longUrl === valueLongURL);
+    if (isMatchingMode && isMatchingSearch) { 
+      addUrlToList(keyShortURL, valueLongURL); 
+    }
   });
   
-  // 如果列表为空，显示提示 (动态提示)
+  // 如果列表为空，显示提示
   if (urlList.children.length === 0) {
     const modeName = getModeName(currentMode);
     urlList.innerHTML = `<div class="result-tip text-center py-3">暂无${modeName}记录</div>`;
@@ -139,295 +144,281 @@ function loadUrlList() {
 }
 
 function addUrlToList(shortUrl, longUrl) {
-  let urlList = urlListElement;
-  let child = document.createElement('div')
-  child.classList.add("list-group-item")
-  let keyItem = document.createElement('div')
-  keyItem.classList.add("input-group")
+  const urlList = urlListElement;
+  const child = document.createElement('div');
+  child.classList.add("list-group-item", "py-2"); // 增加垂直填充
+  
+  // 短链接区域 (input-group)
+  const keyItem = document.createElement('div');
+  keyItem.classList.add("input-group", "mb-1"); // 增加底部边距
 
-  // 短链接信息
-  let keyTxt = document.createElement('span')
-  keyTxt.classList.add("form-control")
-  keyTxt.innerText = window.location.protocol + "//" + window.location.host + "/" + shortUrl
-  keyItem.appendChild(keyTxt)
+  // 短链接文本
+  const keyTxt = document.createElement('span');
+  keyTxt.classList.add("form-control", "text-truncate"); // 使用 text-truncate 避免溢出
+  keyTxt.innerText = window.location.protocol + "//" + window.location.host + "/" + shortUrl;
+  keyItem.appendChild(keyTxt);
 
-  // 删除按钮
-  let delBtn = document.createElement('button')
-  delBtn.setAttribute('type', 'button')
-  delBtn.classList.add("btn", "btn-danger")
-  delBtn.setAttribute('onclick', 'deleteShortUrl(\"' + shortUrl + '\")')
-  delBtn.setAttribute('id', 'delBtn-' + shortUrl)
-  delBtn.innerHTML = '<i class="fas fa-trash-alt" title="删除短链接"></i>'
-  keyItem.appendChild(delBtn)
+  // 按钮组
+  const buttonsConfig = [
+    { title: "删除短链接", icon: "trash-alt", color: "danger", id: `delBtn-${shortUrl}`, action: () => deleteShortUrl(shortUrl) },
+    ...(window.visit_count_enabled ? [{ title: "访问统计", icon: "chart-line", color: "info", id: `qryCntBtn-${shortUrl}`, action: () => queryVisitCount(shortUrl) }] : []),
+    { title: "复制短链接", icon: "copy", color: "success", id: `copyBtn-${shortUrl}`, action: () => copyShortUrl(`${window.location.protocol}//${window.location.host}/${shortUrl}`, `copyBtn-${shortUrl}`) },
+    { title: "显示二维码", icon: "qrcode", color: "info", id: `qrcodeBtn-${shortUrl}`, action: () => toggleQrcode(shortUrl) },
+  ];
 
-  // 只有当 visit_count 为 true 时才显示统计按钮
-  if (window.visit_count_enabled === true) {
-    let qryCntBtn = document.createElement('button')
-    qryCntBtn.setAttribute('type', 'button')
-    qryCntBtn.classList.add("btn", "btn-info")
-    qryCntBtn.setAttribute('onclick', 'queryVisitCount(\"' + shortUrl + '\")')
-    qryCntBtn.setAttribute('id', 'qryCntBtn-' + shortUrl)
-    qryCntBtn.innerHTML = '<i class="fas fa-chart-line" title="访问统计"></i>'
-    keyItem.appendChild(qryCntBtn)
-  }
+  buttonsConfig.forEach(config => {
+    const btn = document.createElement('button');
+    btn.setAttribute('type', 'button');
+    btn.classList.add("btn", `btn-${config.color}`);
+    btn.setAttribute('id', config.id);
+    btn.setAttribute('title', config.title);
+    btn.innerHTML = `<i class="fas fa-${config.icon}"></i>`;
+    btn.onclick = config.action;
+    keyItem.appendChild(btn);
+  });
+  
+  child.appendChild(keyItem);
 
-  // 复制按钮
-  const copyBtn = document.createElement('button');
-  copyBtn.setAttribute('type', 'button');
-  copyBtn.classList.add('btn', 'btn-success');
-  copyBtn.setAttribute('id', `copyBtn-${shortUrl}`);
-  copyBtn.innerHTML = '<i class="fas fa-copy" title="复制短链接"></i>';
-  copyBtn.onclick = () => copyShortUrl(
-    `${window.location.protocol}//${window.location.host}/${shortUrl}`,
-    `copyBtn-${shortUrl}`
-  );
-  keyItem.appendChild(copyBtn);
-
-  // 显示二维码按钮
-  let qrcodeBtn = document.createElement('button')
-  qrcodeBtn.setAttribute('type', 'button')
-  qrcodeBtn.classList.add("btn", "btn-info",)
-  qrcodeBtn.setAttribute('onclick', 'toggleQrcode(\"' + shortUrl + '\")')
-  qrcodeBtn.setAttribute('id', 'qrcodeBtn-' + shortUrl)
-  qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="显示二维码"></i>'
-  keyItem.appendChild(qrcodeBtn)
-  child.appendChild(keyItem)
-
-  // 插入一个二维码占位
-  let qrcodeContainer = document.createElement('div');
+  // 二维码占位
+  const qrcodeContainer = document.createElement('div');
   qrcodeContainer.setAttribute('id', 'qrcode-' + shortUrl);
-  qrcodeContainer.classList.add('qrcode-container'); 
+  qrcodeContainer.classList.add('qrcode-container', 'my-2'); // 增加垂直边距
   child.appendChild(qrcodeContainer);
-  child.appendChild(buildValueItemFunc(longUrl)) // 长链接信息
-  urlList.append(child)
+  
+  // 长链接信息 (使用 buildValueItemFunc)
+  child.appendChild(buildValueItemFunc(longUrl));
+  urlList.append(child);
 }
 
 // 二维码切换逻辑
 function toggleQrcode(shortUrl) {
-  const qrcodeContainer = document.getElementById('qrcode-' + shortUrl); 
+  const qrcodeContainer = document.getElementById('qrcode-' + shortUrl);
   const qrcodeBtn = document.getElementById('qrcodeBtn-' + shortUrl);
   const fullUrl = window.location.protocol + "//" + window.location.host + "/" + shortUrl;
   const isVisible = qrcodeContainer.classList.toggle('qrcode-visible');
   
   if (isVisible) {
-    // 生成 QR code
     qrcodeContainer.innerHTML = '';
+    // 依赖 JQuery qrcode 库
     $(qrcodeContainer).qrcode({
       render: 'canvas',
       minVersion: 1,
       maxVersion: 40,
-      ecLevel: 'Q', // 'L', 'M', 'Q' or 'H'
+      ecLevel: 'Q',
       size: 128,
       text: fullUrl
     });
     qrcodeBtn.classList.replace('btn-info', 'btn-warning');
     qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="隐藏二维码"></i>';
   } else {
-  setTimeout(() => {
-    qrcodeContainer.innerHTML = '';
-  }, 500);
-  qrcodeBtn.classList.replace('btn-warning', 'btn-info');
-  qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="显示二维码"></i>';
+    setTimeout(() => { qrcodeContainer.innerHTML = ''; }, 500);
+    qrcodeBtn.classList.replace('btn-warning', 'btn-info');
+    qrcodeBtn.innerHTML = '<i class="fas fa-qrcode" title="显示二维码"></i>';
   }
 }
+
+function buildValueTxt(longUrl) {
+  let valueTxt = document.createElement('div');
+  valueTxt.classList.add("form-control", "text-muted", "small");
+  valueTxt.innerText = longUrl;
+  return valueTxt;
+}
+
+// --- API 调用函数 ---
 
 // 生成短链
-function shorturl(event) {
+async function shorturl(event) {
   if (event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-    } else {
-      return;
-    }
+    event.preventDefault();
+    if (event.type === 'keydown' && event.key !== 'Enter') { return; }
   }
-  if (longUrlElement.value == "") { showResultModal("URL不能为空!"); return; }
 
-  const addBtn = document.getElementById("addBtn");
-  const originalBtnHtml = addBtn.innerHTML;
-  addBtn.disabled = true;
-  addBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 提交中...';
-  document.getElementById('keyPhrase').value = document.getElementById('keyPhrase').value
-    .replace(/[\s#*|]/g, "-"); // 替换空格 (\s)、#、*、| 为连字符 (-)
-  
-  const api_password = document.querySelector("#passwordText").value;
-  fetch(apiSrv, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      cmd: "add",
-      url: longUrlElement.value.trim(),
-      key: document.querySelector("#keyPhrase").value,
-      password: api_password,
-      type: window.current_mode || 'link'
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    addBtn.disabled = false;
-    addBtn.innerHTML = originalBtnHtml; // 恢复保存的原始 HTML
+  if (longUrlElement.value == "") {
+    showResultModal("URL不能为空!");
+    return;
+  }
+
+  const keyPhrase = document.getElementById('keyPhrase').value
+    .replace(/[\s#*|]/g, "-"); // 替换非法字符
+  document.getElementById('keyPhrase').value = keyPhrase; // 更新输入框值
+
+  setButtonState("addBtn", "loading");
+
+  try {
+    const response = await fetch(apiSrv, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cmd: "add",
+        url: longUrlElement.value,
+        key: keyPhrase,
+        password: api_password,
+        type: window.current_mode
+      })
+    });
+    const data = await response.json();
+
     if (data.status == 200) {
       const shortUrl = window.location.protocol + "//" + window.location.host + "/" + data.key;
-      // 绑定模态框复制按钮事件
       document.getElementById("copyResultBtn").onclick = () => { handleModalCopy(shortUrl); };
-      showResultModal(shortUrl); // 生成短链后显示模态框
-      localStorage.setItem(data.key, longUrlElement.value); // 添加到本地存储和KV列表
+      showResultModal(shortUrl);
+      localStorage.setItem(data.key, longUrlElement.value);
       addUrlToList(data.key, longUrlElement.value);
     } else {
-      showResultModal(data.error || "生成短链接失败");
+      showResultModal(data.error || "生成失败");
     }
-  })
-  .catch(err => {
+  } catch (err) {
     console.error("Error:", err);
-    addBtn.disabled = false;
-    addBtn.innerHTML = originalBtnHtml;
     showResultModal("请求失败，请重试");
-  });
+  } finally {
+    setButtonState("addBtn", "reset"); 
+  }
 }
 
-// 删除短链
-function deleteShortUrl(delKeyPhrase) {
-  document.getElementById("delBtn-" + delKeyPhrase).disabled = true;
-  document.getElementById("delBtn-" + delKeyPhrase).innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+async function deleteShortUrl(delKeyPhrase) {
+  const btnId = `delBtn-${delKeyPhrase}`;
+  setButtonState(btnId, "loading"); 
 
-  const api_password = document.querySelector("#passwordText").value;
-  fetch(apiSrv, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      cmd: "del",
-      key: delKeyPhrase,
-      password: api_password
-    })
-  }).then(function (response) {
-    return response.json();
-  }).then(function (myJson) {
+  try {
+    const response = await fetch(apiSrv, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cmd: "del",
+        key: delKeyPhrase,
+        password: api_password
+      })
+    });
+    const myJson = await response.json();
+
     if (myJson.status == "200") {
-      localStorage.removeItem(delKeyPhrase)
-      loadUrlList()
-      showResultModal("已删除")
+      localStorage.removeItem(delKeyPhrase);
+      loadUrlList();
+      showResultModal("已删除");
     } else {
-      showResultModal(myJson.error || "删除短链接失败");
+      showResultModal(myJson.error || "删除失败");
     }
-  }).catch(function (err) {
+  } catch (err) {
     showResultModal("删除请求失败，请重试!");
-    console.log(err);
-  })
+    console.error(err);
+  } finally {
+    setButtonState(btnId, "reset"); 
+  }
 }
 
-// 查询短链访问计数
-function queryVisitCount(qryKeyPhrase) {
-  const btn = document.getElementById("qryCntBtn-" + qryKeyPhrase);
-  const originalIcon = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+async function queryVisitCount(qryKeyPhrase) {
+  const btnId = `qryCntBtn-${qryKeyPhrase}`;
+  setButtonState(btnId, "loading"); 
 
-  const api_password = document.querySelector("#passwordText").value;
-  fetch(apiSrv, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      cmd: "qrycnt",
-      key: qryKeyPhrase,
-      password: api_password
-    })
-  }).then(function (response) {
-    return response.json();
-  }).then(function (myJson) {
-    if (myJson.status == "200" && myJson.countlist && myJson.countlist.length > 0) {
-      const count = myJson.countlist[0].count;
-      btn.innerHTML = count; // 成功：显示访问计数
+  try {
+    const response = await fetch(apiSrv, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cmd: "qrycnt",
+        key: qryKeyPhrase,
+        password: api_password
+      })
+    });
+    const myJson = await response.json();
+
+    if (myJson.status == "200") {
+      setButtonState(btnId, "query-success", myJson.count); 
     } else {
       showResultModal(myJson.error || "查询访问计数失败");
-      btn.innerHTML = originalIcon; // 恢复图标
+      setButtonState(btnId, "reset"); 
     }
-    btn.disabled = false;
-  })
-  .catch(function (err) {
+  } catch (err) {
     showResultModal("查询统计请求失败，请重试");
-    console.log(err);
-    btn.innerHTML = originalIcon; // 恢复图标
-    btn.disabled = false; // 启用按钮
-  });
+    console.error(err);
+    setButtonState(btnId, "reset"); 
+  }
 }
 
-// 查询短链
-function query1KV(event) {
+async function query1KV(event) {
   if (event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-    } else {
-      return;
-    }
+    event.preventDefault();
+    if (event.type === 'keydown' && event.key !== 'Enter') { return; }
   }
 
   let qryKeyPhrase = document.getElementById("keyForQuery").value;
   if (qryKeyPhrase == "") { return }
-  const api_password = document.querySelector("#passwordText").value;
-  
-  fetch(apiSrv, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      cmd: "qry",
-      key: qryKeyPhrase,
-      password: api_password
-    })
-  }).then(function (response) {
-    return response.json();
-  }).then(function (myJson) {
-    if (myJson.status == "200" && myJson.qrylist && myJson.qrylist.length > 0) {
-      const item = myJson.qrylist[0];
-      longUrlElement.value = item.value;
-      document.getElementById("keyPhrase").value = item.key;
-      longUrlElement.dispatchEvent(new Event('input', { bubbles: true, cancelable: true, }))
+  setButtonState("queryBtn", "loading");
+
+  try {
+    const response = await fetch(apiSrv, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cmd: "qry",
+        key: qryKeyPhrase,
+        password: api_password
+      })
+    });
+    const myJson = await response.json();
+
+    if (myJson.status == "200") {
+      longUrlElement.value = myJson.url;
+      document.getElementById("keyPhrase").value = qryKeyPhrase;
+      longUrlElement.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
     } else {
-      showResultModal(myJson.error || "查询短链接失败");
+      showResultModal(myJson.error || "查询失败");
     }
-  }).catch(function (err) {
-      console.log(err);
-      showResultModal("未知错误, 请重试!");
-  })
+  } catch (err) {
+    showResultModal("未知错误, 请重试!");
+    console.error(err);
+  } finally {
+    setButtonState("queryBtn", "reset");
+  }
 }
 
 // 从KV加载记录
-function loadKV() {
-  const currentMode = window.current_mode || 'link';
-  const api_password = document.querySelector("#passwordText").value;
-  
-  fetch(apiSrv, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      cmd: "qryall",
-      password: api_password
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.status == 200 && data.qrylist) {
+async function loadKV() {
+  const currentMode = window.current_mode;
+  setButtonState("loadKvBtn", "loading"); 
+
+  try {
+    const response = await fetch(apiSrv, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cmd: "qryall",
+        password: api_password
+      })
+    });
+    
+    if (!response.ok) throw new Error('网络请求失败');
+    const data = await response.json();
+
+    if (data.status == 200) {
       clearLocalStorage();
       let loadedCount = 0;
-      data.qrylist.forEach(item => { // 遍历 qrylist
+
+      for (const item of data.kvlist) {
         const key = item.key;
         const value = item.value;
-        if (key === 'theme') { return; } 
-        if (isDataMode(value, currentMode)) { localStorage.setItem(key, value); loadedCount++; }
-      });
+        
+        if (isDataMode(value, currentMode)) { 
+          localStorage.setItem(key, value); 
+          loadedCount++; 
+        }
+      }
+
       loadUrlList();
       const modeName = getModeName(currentMode);
       showResultModal(`成功加载 ${loadedCount} 条${modeName}记录`);
-    } else {
-      showResultModal(data.error || "加载失败");
-    }
-  })
-  .catch(err => {
-    console.error("Error:", err);
-    showResultModal("请求失败，请重试");
-  });
+    } else { showResultModal(data.error || "加载失败"); }
+  } catch (err) { 
+    console.error("Error:", err); 
+    showResultModal("请求失败，请重试"); 
+  } finally {
+    setButtonState("loadKvBtn", "reset"); 
+  }
 }
 
-// 事件绑定：DOM加载完成后初始化 Popover
+// 事件绑定：DOM加载完成后初始化
 document.addEventListener('DOMContentLoaded', function () {
+  // 初始化 Popover
   const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
   popoverTriggerList.map(function (popoverTriggerEl) {
     return new bootstrap.Popover(popoverTriggerEl);
@@ -435,42 +426,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
   longUrlElement = document.querySelector("#longURL");
   urlListElement = document.querySelector("#urlList");
+  api_password = document.querySelector("#passwordText").value;
+  buildValueItemFunc = buildValueTxt; 
+  document.getElementById("passwordText").readOnly = true;
 
   // 获取后端配置
-  function loadConfig() {
-    fetch(apiSrv, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        cmd: "config",
-        password: api_password
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
+  async function loadConfig() {
+    try {
+      const response = await fetch(apiSrv, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cmd: "config", password: api_password })
+      });
+      const data = await response.json();
+
       if (data.status == 200) {
         window.visit_count_enabled = data.visit_count;
-        window.allow_custom_key = data.custom_link;
+        window.allow_custom_key = data.custom_link; // 后端返回 custom_link
+
         const customKeyInput = document.getElementById('keyPhrase');
         if (data.custom_link) {
-          // 功能开启：启用输入框，显示默认 placeholder
           customKeyInput.disabled = false;
           customKeyInput.placeholder = customKeyInput.getAttribute('placeholder') || "输入大小写字母和数字";
         } else {
-          // 功能关闭：禁用输入框，修改 placeholder
           customKeyInput.disabled = true;
           customKeyInput.placeholder = "功能未开启, 随机生成短链Key";
-          customKeyInput.value = ""; // 清空可能已有的输入
+          customKeyInput.value = "";
         }
-        // 可以在这里存储其他配置
       }
-      loadUrlList();
-    })
-    .catch(err => {
+    } catch (err) {
       console.error("加载配置时出错:", err);
+    } finally {
       loadUrlList();
-    });
+    }
   }
-  document.getElementById("passwordText").readOnly = true;
   loadConfig();
 });
