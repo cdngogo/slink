@@ -48,7 +48,7 @@
 
 | 变量名             | 默认值     | 描述                                     |
 | ----------------- | ------- | -------------------------------------- |
-| **ADMIN**         | link    | 管理密码，访问 `/link` 进入主页                   |
+| **ADMIN**         | admin    | 管理密码，访问 `/admin` 进入主页                   |
 | **PASSWORD**      | apipass | API 秘钥，小白不用管它                          |
 | **UNIQUE_LINK**   | true    | 是否开启唯一链接功能（相同 URL 只生成一个短链）             |
 | **CUSTOM_LINK**   | true    | 是否允许用户自定义短链 Key                        |
@@ -61,7 +61,7 @@
 
 ## API 接口说明
 
-- API 端点：`/<ADMIN>`，示例 `/link`
+- API 端点：`/<ADMIN>`，示例 `/admin`
 - 请求体：`"Content-type": "application/json"`
 
 | 方法   | 参数             | cmd 命令 | 描述                     |
