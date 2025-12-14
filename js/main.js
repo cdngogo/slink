@@ -1,4 +1,4 @@
-let apiSrv = window.location.pathname;
+//let apiSrv = window.location.pathname;
 let api_password = document.querySelector("#passwordText").value;
 let buildValueItemFunc = buildValueTxt; // 这是默认行为, 在不同的模式中可以设置为不同的行为
 let longUrlElement;
@@ -7,9 +7,10 @@ let urlListElement;
 // 解析路径以确定当前模式
 const pathnameSegments = window.location.pathname.split("/").filter(p => p.length > 0); 
 window.adminPath = pathnameSegments.length > 0 ? '/' + pathnameSegments[0] : '';
+let apiSrv = window.adminPath;
 const modeFromPath = pathnameSegments.length >= 2 ? pathnameSegments[1] : (pathnameSegments.length === 1 ? 'link' : '');
 window.current_mode = ['link', 'img', 'note', 'paste'].includes(modeFromPath) ? modeFromPath : 'link';
-window.visit_count_enabled = false; // 必须是全局的，供 addUrlToList 和 loadConfig 使用
+window.visit_count_enabled = false;
 
 function buildValueTxt(longUrl) {
   let valueTxt = document.createElement('div')
