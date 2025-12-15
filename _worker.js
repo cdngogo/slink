@@ -144,7 +144,7 @@ async function handleApiCommand(req, env, ctx, config, isKeyProtected, json_resp
             response_data.error = `错误: 图床类型必须是有效的Base64`; http_status = 400;
             break;
           }
-      } else if (!["note", "paste"].includes(req_type)) {
+      } else if (!["note"].includes(req_type)) {
         response_data.error = `错误: 未知的内容类型: ${req_type}`; http_status = 400;
         break;
       }
