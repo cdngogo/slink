@@ -1,20 +1,26 @@
 ## 🚀 Slink API 文档
 
-- **API端点:** `/<ADMIN>`
+- **API端点:** `/<password>/<ADMIN>` (对于查询/删除/计数)，ADMIN 由环境变量 `ADMIN` 自定义，默认值为 `admin`
+- **API端点:** `/<password>/<type>` (对于添加)
 - **请求方法:** `POST`
 - **请求头:** `Content-Type: application/json`
-- **请求体:** 必须包含 `cmd` 字段
-- **受保护 Key:** `["password", "link", "img", "note", "paste"]` 列表中的 Key 无法被 API 操作（添加、删除、查询）
+- **请求体:** 必须包含 `cmd` 和 `password` 字段
+- **受保护 Key:** `["password", "link", "img", "note"]` 列表中的 Key 无法被 API 操作
 
 ---
 
 ## 参数说明
 
-- **cmd**：操作命令，必须。支持 `add`（添加短链）、`qry`（查询短链）、`del`（删除短链）、`qrycnt`（查询访问计数）
-- **type**：链接模式，仅 `add` 命令需要。支持 `link`（短链）、`img`（图床）、`note`（记事本）、`paste`（剪贴板）
-- **url**：源 URL，必须。`link`模式时为长链 URL，`img`模式时为图片base64码，`note`模式时为记事本内容，`paste`模式时为剪贴板内容
-- **key**：自定义短链 Key，可选。如果不提供，系统将自动生成一个随机 Key。支持中文，支持单个或数组形式，单个时为字符串 `key`，数组时为字符串数组 `["key1", "key2", "key3"]`，如果为空，则操作全部
+- **cmd**：操作命令，必须。支持 `add`（添加）、`qry`（查询）、`del`（删除）、`qrycnt`（查询访问计数）
 - **password**：`api` 秘钥，必须。默认值为 `apipass`，可以通过环境变量 `PASSWORD` 自定义
+- **type**：功能模块，仅 `add` 命令需要。支持 `link`（短链）、`img`（图床）、`note`（记事本）
+- **url**：源 URL，仅 `add` 命令需要。`link`模式时为长链 URL，`img`模式时为图片base64码，`note`模式时为文本内容
+- **key**：自定义短链 Key，可选。如果不提供，系统将自动生成一个随机 Key
+  - 支持中文
+  - 支持单个或数组形式
+  - 单个时为字符串 `key`
+  - 数组时为字符串数组 `["key1", "key2", "key3"]`
+  - 如果为空，则操作全部
 
 ## 1. 添加短链
 
@@ -168,7 +174,7 @@ curl -X POST https://<worker_domain>/<password> \
 {
   "status": 200,
   "error": "",
-  "deleted_count": 1,
+  "deleted_count": 2,
   "dellist": [
     {
       "key": "link1",
@@ -262,6 +268,5 @@ curl -X POST https://<worker_domain>/<password> \
 | `https://<YOUR_WORKER_URL>/`                | 返回 `404` 页面         |
 | `https://<YOUR_WORKER_URL>/<ADMIN>`         | 短链页面                |
 | `https://<YOUR_WORKER_URL>/<ADMIN>/img`     | 图床页面                |
-| `https://<YOUR_WORKER_URL>/<ADMIN>/note`    | 记事本页面，暂未开放     |
-| `https://<YOUR_WORKER_URL>/<ADMIN>/paste`   | 剪贴板页面，暂未开放     |
+| `https://<YOUR_WORKER_URL>/<ADMIN>/note`    | 笔记页面                |
 | `https://<YOUR_WORKER_URL>/短链key`         | 直接访问短链接           |

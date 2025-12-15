@@ -33,7 +33,7 @@
       min-height: 0;
       overflow: hidden;
     }
-    #urlList { max-height: 1000px; }
+    #urlList { max-height: 800px; }
     /* 媒体查询 - 768px (布局切换：两栏变单栏) */
     @media (max-width: 768px) {
       .cards-container { flex-direction: column; gap: 20px; margin-bottom: 20px; }
@@ -106,7 +106,7 @@
               <span class="input-group-text"><i class="fas fa-file-signature"></i></span>
               <input type="text" class="form-control" id="keyPhrase" placeholder="示例: 123.jpg"
                 onkeypress="shorturl(event)">
-              <button class="btn btn-outline-primary" type="button" id="addBtn" onclick="shorturl()">
+              <button class="btn btn-outline-primary" type="button" id="addBtn" onclick="shorturl(event)">
                 <i class="fas fa-save me-2"></i>保存
               </button>
             </div>
@@ -117,8 +117,8 @@
             <div class="input-group">
               <span class="input-group-text"><i class="fas fa-search"></i></span>
               <input type="text" class="form-control" id="keyForQuery" placeholder="输入图片名查询链接"
-                onkeypress="if(event.keyCode === 13) query1KV()">
-              <button class="btn btn-outline-primary" type="button" onclick="query1KV()">
+                onkeypress="query1KV(event)">
+              <button class="btn btn-outline-primary" type="button" onclick="query1KV(event)">
                 <i class="fas fa-external-link-alt me-2"></i>查询
               </button>
             </div>

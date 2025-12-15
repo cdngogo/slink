@@ -37,9 +37,9 @@
     <div class="container">
         <div class="text-center mb-4">
             <h1 class="display-5 fw-bold mb-3">
-                <i class="fas fa-note-sticky me-2"></i>在线记事本
+                <i class="fas fa-note-sticky me-2"></i>在线笔记
             </h1>
-            <p class="lead fw-medium">基于 CF Worker 和 KV 创建的在线记事本服务</p>
+            <p class="lead fw-medium">基于 CF Worker 和 KV 创建的在线笔记服务</p>
         </div>
 
         <div class="row">
@@ -66,7 +66,7 @@
                                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                     <input type="text" class="form-control" id="keyPhrase" placeholder="示例: my-note.md"
                                         onkeypress="shorturl(event)">
-                                    <button class="btn btn-outline-primary" type="button" id="addBtn" onclick="shorturl()">
+                                    <button class="btn btn-outline-primary" type="button" id="addBtn" onclick="shorturl(event)">
                                         <i class="fas fa-save me-2"></i>保存
                                     </button>
                                 </div>
@@ -77,8 +77,8 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-search"></i></span>
                                     <input type="text" class="form-control" id="keyForQuery" placeholder="输入 Key 查询笔记链接"
-                                        onkeypress="if(event.keyCode === 13) query1KV()">
-                                    <button class="btn btn-outline-primary" type="button" onclick="query1KV()">
+                                        onkeypress="query1KV(event)">
+                                    <button class="btn btn-outline-primary" type="button" onclick="query1KV(event)">
                                         <i class="fas fa-external-link-alt me-2"></i>查询
                                     </button>
                                 </div>
@@ -116,7 +116,7 @@
                     <div class="card-header"><i class="fas fa-eye me-2"></i>Markdown 预览</div>
                     <div class="card-body preview-body"> 
                         <div id="html-preview" class="markdown-preview">
-                            <p>在左侧输入 Markdown 文本可实时预览</p>
+                            <p>在左侧输入 Markdown 可实时预览</p>
                         </div>
                     </div>
                 </div>
@@ -179,7 +179,3 @@
     </script>
 </body>
 </html>
-
-
-
-
