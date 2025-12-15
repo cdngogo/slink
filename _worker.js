@@ -143,19 +143,19 @@ async function handleApiCommand(req, env, config, json_response_header, ctx) {
       case "add":
         if (req_type === "link") {
           if (!await checkURL(req_url)) {
-            response_data.error = `错误: 短链类型必须是有效的URL`; http_status = 400;
+            response_data.error = `错误: 链接类型必须是有效的URL`; http_status = 400;
             break;
           }
         } else if (req_type === "img") {
             if (!req_url || !req_url.startsWith("data:image/")) {
-              response_data.error = `错误: 图床类型必须是有效的Base64图片`; http_status = 400;
+              response_data.error = `错误: 图床类型必须是有效的Base64`; http_status = 400;
               break;
             }
         } else if (!["note", "paste"].includes(req_type)) {
           response_data.error = `错误: 未知的内容类型: ${req_type}`; http_status = 400;
           break;
         }
-        
+            
         let final_key;
         http_status = 200;
         if (config.custom_link && req_key) {
@@ -178,7 +178,8 @@ async function handleApiCommand(req, env, config, json_response_header, ctx) {
           }
         } else { final_key = await save_url(req_url, env); }
         
-        if (final_key && http_status === 200) {
+        // 统一处理成功或KV写入失败的返回
+        if (final_key && http_status === 200) { 
           response_data = { status: 200, key: final_key, error: "" };
         } else if (!final_key && http_status === 200) {
           response_data = { status: 507, key: "", error: "错误: 达到KV写入限制" }; http_status = 507;
