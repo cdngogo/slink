@@ -225,12 +225,7 @@ function buildValueTxt(longUrl) {
 // --- API 调用函数 ---
 
 // 生成短链
-async function shorturl(event) {
-  if (event) {
-    event.preventDefault();
-    if (event.type === 'keydown' && event.key !== 'Enter') { return; }
-  }
-
+async function shorturl() {
   if (longUrlElement.value == "") {
     showResultModal("URL不能为空!");
     return;
@@ -238,8 +233,7 @@ async function shorturl(event) {
 
   const keyPhrase = document.getElementById('keyPhrase').value
     .replace(/[\s#*|]/g, "-"); // 替换非法字符
-  document.getElementById('keyPhrase').value = keyPhrase; // 更新输入框值
-
+  document.getElementById('keyPhrase').value = keyPhrase;
   setButtonState("addBtn", "loading");
 
   try {
@@ -333,12 +327,7 @@ async function queryVisitCount(qryKeyPhrase) {
   }
 }
 
-async function query1KV(event) {
-  if (event) {
-    event.preventDefault();
-    if (event.type === 'keydown' && event.key !== 'Enter') { return; }
-  }
-
+async function query1KV() {
   let qryKeyPhrase = document.getElementById("keyForQuery").value;
   if (qryKeyPhrase == "") { return }
   setButtonState("queryBtn", "loading");
