@@ -364,7 +364,7 @@ async function loadKV() {
       clearInputFields();
       for (const item of data.qrylist) {
         const key = item.key;
-        const value = item.value; // 过滤当前模式下不匹配的数据
+        const value = item.value;
         if (value) {
           localStorage.setItem(key, value);
           loadedCount++;

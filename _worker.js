@@ -279,7 +279,7 @@ async function handleApiCommand(req, env, config, json_response_header, ctx) {
       http_status = 200;
       let qrylist = []; // 存储查询结果响应体
       const req_type_filter = req_type || ''; // 如果 req_type 为空，则查询所有模式
-      let listOptions = {};
+      let listOptions = { limit: 1000, include_value: true };
       if (req_type_filter) listOptions.prefix = req_type_filter + ':';
       const keyList = await env.LINKS.list(listOptions);
 
@@ -305,7 +305,11 @@ async function handleApiCommand(req, env, config, json_response_header, ctx) {
           finalResults.push({ key: originalKey, type: currentType });
         }
         const urls = await Promise.all(urlPromises); // 批量查询内容
-        qrylist = finalResults.map((result, index) => ({ key: result.key, value: urls[index], type: result.type })); // 构造最终响应结构
+        qrylist = finalResults.map((result, index) => ({
+          key: result.key,
+          value: urls[index],
+          type: result.type,
+        })); // 构造最终响应结构
         response_data = { status: 200, error: '', qrylist: qrylist };
       } else {
         response_data = { status: 500, error: '错误: 加载key列表失败' };
