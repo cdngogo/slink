@@ -15,9 +15,16 @@ window.current_mode = ['note'].includes(modeFromPath) ? modeFromPath : 'link';
 window.visit_count_enabled = false; // 由后端配置决定
 
 // --- 实用工具函数 ---
-
-function clearLocalStorage() {
-  localStorage.clear();
+function clearModeLocalStorage() {
+  const currentPrefix = `${window.current_mode}:`;
+  let keysToDelete = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith(currentPrefix)) keysToDelete.push(key);
+  }
+  keysToDelete.forEach((key) => {
+    localStorage.removeItem(key);
+  });
 }
 
 // 定义模式
@@ -128,16 +135,21 @@ function loadUrlList() {
   urlList.innerHTML = '';
   const currentMode = window.current_mode;
   const longUrl = longUrlElement.value.trim();
+
+  const targetPrefix = `${currentMode}:`;
   let keys = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key !== 'theme') keys.push(key);
+    if (key !== 'theme' && key.startsWith(targetPrefix)) keys.push(key);
   }
-  keys.reverse().forEach((keyShortURL) => {
-    let valueLongURL = localStorage.getItem(keyShortURL);
+
+  keys.reverse().forEach((keyWithPrefix) => {
+    let valueLongURL = localStorage.getItem(keyWithPrefix);
+    const keyShortURL = keyWithPrefix.substring(targetPrefix.length); // 提取主 Key
     const isMatchingSearch = longUrl === '' || longUrl === valueLongURL;
     if (isMatchingSearch) addUrlToList(keyShortURL, valueLongURL);
-  }); // 如果列表为空，显示提示
+  });
+
   if (urlList.children.length === 0) {
     const modeName = getModeName(currentMode);
     urlList.innerHTML = `<div class="result-tip text-center py-3">暂无${modeName}记录</div>`;
@@ -235,7 +247,8 @@ async function shorturl() {
         handleModalCopy(shortUrl);
       };
       showResultModal(shortUrl);
-      localStorage.setItem(data.key, longUrl);
+      const localStorageKey = `${window.current_mode}:${data.key}`;
+      localStorage.setItem(localStorageKey, longUrl);
       addUrlToList(data.key, longUrl);
     } else {
       showResultModal(data.error || '生成失败');
@@ -359,14 +372,15 @@ async function loadKV() {
     const data = await response.json();
 
     if (data.status == 200) {
-      clearLocalStorage();
+      clearModeLocalStorage();
       let loadedCount = 0;
       clearInputFields();
       for (const item of data.qrylist) {
         const key = item.key;
         const value = item.value;
         if (value) {
-          localStorage.setItem(key, value);
+          const localStorageKey = `${window.current_mode}:${key}`;
+          localStorage.setItem(localStorageKey, value);
           loadedCount++;
         }
       }

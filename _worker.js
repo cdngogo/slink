@@ -279,7 +279,8 @@ async function handleApiCommand(req, env, config, json_response_header, ctx) {
       http_status = 200;
       let qrylist = []; // 存储查询结果响应体
       const req_type_filter = req_type || ''; // 如果 req_type 为空，则查询所有模式
-      let listOptions = { limit: 1000, include_value: true };
+
+      let listOptions = { limit: 1000 };
       if (req_type_filter) listOptions.prefix = req_type_filter + ':';
       const keyList = await env.LINKS.list(listOptions);
 
@@ -290,14 +291,12 @@ async function handleApiCommand(req, env, config, json_response_header, ctx) {
           let originalKey;
           let currentType;
           if (req_type_filter) {
-            // 1. 传入了 type
             const prefix = req_type_filter + ':';
             if (item.name.startsWith(prefix)) {
               originalKey = item.name.substring(prefix.length);
             } else {
-              originalKey = item.value;
+              continue;
             }
-            if (typeof originalKey === 'string') originalKey = originalKey.trim();
             currentType = req_type_filter;
           } else {
             //2. 未传入 type
@@ -308,10 +307,11 @@ async function handleApiCommand(req, env, config, json_response_header, ctx) {
             currentType = 'unknown';
           }
           if (originalKey) {
-            urlPromises.push(env.LINKS.get(originalKey, { type: 'text' }));
+            urlPromises.push(env.LINKS.get(originalKey));
             finalResults.push({ key: originalKey, type: currentType });
           }
         }
+
         const urls = await Promise.all(urlPromises);
         qrylist = finalResults.map((result, index) => ({
           key: result.key,
@@ -320,8 +320,7 @@ async function handleApiCommand(req, env, config, json_response_header, ctx) {
         })); // 构造最终响应结构
         response_data = { status: 200, error: '', qrylist: qrylist };
       } else {
-        response_data = { status: 500, error: '错误: 加载key列表失败' };
-        http_status = 500;
+        response_data = { status: 200, error: '', qrylist: [] };
       }
       break;
 
